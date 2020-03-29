@@ -1,0 +1,31 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "DjIB4Erdu6l/CAHWkF5pEiTJ8ic=",
+			"path": "github.com/go-sql-driver/mysql",
+			"revision": "681ffa848bae8d0d7b1a452963c0705b132308f7",
+			"revisionTime": "2020-03-11T11:32:36Z"
+		},
+		{
+			"checksumSHA1": "gEywKPywquujejnLQZts6wqVJRE=",
+			"path": "github.com/go-xorm/xorm",
+			"revision": "f39e5d9bfdb70c435f8649555f224c0fa4f51e54",
+			"revisionTime": "2019-10-15T07:03:49Z"
+		},
+		{
+			"checksumSHA1": "TBIYyIkD8Lm7h+1mrkEneqv4S4g=",
+			"path": "xorm.io/builder",
+			"revision": "06d6d3e89f313f2fdb4ad459ad4c790183e0ef22",
+			"revisionTime": "2020-03-22T01:50:57Z"
+		},
+		{
+			"checksumSHA1": "NVEiucf/CDfMijndyW0Hqtnfnbg=",
+			"path": "xorm.io/core",
+			"revision": "1e7bccc690201fe9d8c5b0de4403c055de3052c2",
+			"revisionTime": "2020-01-19T09:04:11Z"
+		}
+	],
+	"rootPath": "wumingtianqi-sms-pre"
+}
