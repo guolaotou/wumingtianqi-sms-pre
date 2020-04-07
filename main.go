@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 	"time"
+	"wumingtianqi-sms-pre/config"
 	"wumingtianqi-sms-pre/handler/sms_pre"
 	"wumingtianqi-sms-pre/model"
 	. "wumingtianqi-sms-pre/model/sms_pre"
@@ -12,6 +13,8 @@ import (
 )
 
 func main() {
+	cfg, _ := config.LoadConfig()
+	fmt.Println(cfg.Log)
 	model.InitMysql()
 	tests.MakeData() // 模拟每天凌晨跑出来今日的订单
 	c := make(chan Model, utils.BufferSms)

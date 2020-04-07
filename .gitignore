@@ -15,7 +15,7 @@
 # vendor/
 
 # Custom config
-config.json
+conf/config.json
 *.log
 *.log.gz
 .DS_Store
