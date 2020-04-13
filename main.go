@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"sync"
 	"time"
 	"wumingtianqi-sms-pre/config"
 	"wumingtianqi-sms-pre/handler/sms_pre"
+	"wumingtianqi-sms-pre/handler/weather"
 	"wumingtianqi-sms-pre/model"
 	. "wumingtianqi-sms-pre/model/sms_pre"
 	"wumingtianqi-sms-pre/tests"
@@ -16,6 +18,8 @@ func main() {
 	cfg, _ := config.LoadConfig()
 	fmt.Println(cfg.Log)
 	model.InitMysql()
+	_ = weather.CityWeatherDailyGet("beijing")
+	os.Exit(0)
 	tests.MakeData() // 模拟每天凌晨跑出来今日的订单
 	c := make(chan Model, utils.BufferSms)
 	cTmp := make(chan string, utils.BufferSms)
