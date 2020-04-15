@@ -1,5 +1,9 @@
 {
   "log": {
-    "app-file": "app33.log"
+    "app_file": "app33.log"
+  },
+  "weather": {
+    "xin_zhi_weather_daily_url": "https://api.seniverse.com/v3/weather/daily.json?language=zh-Hans&unit=c&start=-1&days=5",
+    "api_key": "xxx"
   }
 }

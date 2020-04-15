@@ -18,7 +18,12 @@ func main() {
 	cfg, _ := config.LoadConfig()
 	fmt.Println(cfg.Log)
 	model.InitMysql()
-	_ = weather.CityWeatherDailyGet("beijing")
+	res, err := weather.CityWeatherDailyGet("beijing")
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println(res)
+	}
 	os.Exit(0)
 	tests.MakeData() // 模拟每天凌晨跑出来今日的订单
 	c := make(chan Model, utils.BufferSms)
