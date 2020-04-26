@@ -1,12 +1,8 @@
-package sms_pre
+package order
 
 import (
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/go-xorm/xorm"
-	"os"
-	"time"
-	"xorm.io/core"
+	"wumingtianqi-sms-pre/model/common"
 )
 
 type CityJson struct {
@@ -31,38 +27,24 @@ type UserSubscribeContent struct {
 	RemindContactInfo []int           `json:"remind_contact_info" xorm:"VARCHAR(12)"`
 }
 
-type City struct {
-	Id       int    `json:"id" xorm:"pk autoincr INT(11)"`
-	Province string `json:"province" xorm:"VARCHAR(20)"`
-	City     string `json:"city" xorm:"VARCHAR(20)"`
-	District string `json:"district" xorm:"VARCHAR(20)"`
-	PinYin   string `json:"pin_yin" xorm:"VARCHAR(30)"`
-	Abbr     string `json:"abbr" xorm:"VARCHAR(60)"`
+
+func GetAll() ([]UserSubscribeContent, error) {
+	cityList := make([]UserSubscribeContent, 0)
+	err := common.Engine.Find(&cityList)
+	return cityList, err
 }
 
-// todo 天气表
-// typora里新增天气表的详设
-
-var Engine *xorm.Engine
-
-func MysqlInit() {
-	// todo 本地数据库init
-	var err error
-	Engine, err = xorm.NewEngine("mysql", "root:00000000@(127.0.0.1:3306)/wumingtianqi")
-	if err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, "Failed to start  mysql: ", err.Error())
-		os.Exit(1)
-	}
-	Engine.SetColumnMapper(core.SnakeMapper{})
-	Engine.SetMaxIdleConns(1000)
-	Engine.SetMaxOpenConns(1000)
-	Engine.SetConnMaxLifetime(20 * time.Second)
-	if syncErr := Engine.Sync2(new(UserSubscribeContent)); syncErr != nil {
-		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync UserSubscribeContent mysql: ", syncErr.Error())
-		os.Exit(1)
-	}
-	if syncErr := Engine.Sync2(new(City)); syncErr != nil {
-		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync City mysql: ", syncErr.Error())
-		os.Exit(1)
-	}
+func init() {
+	println("1111")
+	//if syncErr := model.Engine.Sync2(new(UserSubscribeContent)); syncErr != nil {
+	//	_, _ = fmt.Fprintln(os.Stderr, "Failed to sync UserSubscribeContent mysql: ", syncErr.Error())
+	//	os.Exit(1)
+	//}
 }
+
+//func init(){
+//	if syncErr := model.Engine.Sync2(new(city.City)); syncErr != nil {
+//		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync City mysql: ", syncErr.Error())
+//		os.Exit(1)
+//	}
+//}

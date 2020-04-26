@@ -8,7 +8,7 @@ import (
 	"wumingtianqi-sms-pre/config"
 )
 
-// 获取新知天气信息 （存入数据库是在另一个函数做）
+// 根据指定城市，获取新知天气信息
 func Get2XinZhiWhether(fakeData bool, cityPinYin string) (XinZhiWeatherDailyResults, error) {  // fakeData为true就不用真的去调用数据了，直接用假数据
 	if fakeData {
 		resBody := `{
@@ -155,8 +155,13 @@ func Get2XinZhiWhether(fakeData bool, cityPinYin string) (XinZhiWeatherDailyResu
 	return XinZhiWeatherDailyResults{}, nil
 }
 
+// todo 根据城市list，顺次异步调用天气信息（控制调用频率）；结果放在channel里
+// todo 读取channel，在最后写入数据库（用sync.WaitGroup）
+
 // todo 有路由的函数，做好路由handler函数和逻辑handler函数的解耦
 func CityWeatherDailyGet(cityPinYin string) (XinZhiWeatherDailyResults, error) {
 	res, err := Get2XinZhiWhether(true, cityPinYin)
 	return res, err
 }
+
+// todo 分一些文件，条例清晰一点

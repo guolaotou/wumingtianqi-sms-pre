@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
-	. "wumingtianqi-sms-pre/model/sms_pre"
+	. "wumingtianqi-sms-pre/model/order"
 	"wumingtianqi-sms-pre/utils"
 )
 

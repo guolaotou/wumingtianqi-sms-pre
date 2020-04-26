@@ -9,7 +9,8 @@ import (
 	"wumingtianqi-sms-pre/handler/sms_pre"
 	"wumingtianqi-sms-pre/handler/weather"
 	"wumingtianqi-sms-pre/model"
-	. "wumingtianqi-sms-pre/model/sms_pre"
+	"wumingtianqi-sms-pre/model/city"
+	. "wumingtianqi-sms-pre/model/order"
 	"wumingtianqi-sms-pre/tests"
 	"wumingtianqi-sms-pre/utils"
 )
@@ -18,7 +19,19 @@ func main() {
 	cfg, _ := config.LoadConfig()
 	fmt.Println(cfg.Log)
 	model.InitMysql()
-	res, err := weather.CityWeatherDailyGet("beijing")
+	cityModel, err := city.GetAllCity()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println("cityModel", cityModel)
+	fmt.Println("cityModel", cityModel[0].PinYin)
+	city, err := city.GetOneCity()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	fmt.Println("city", city)
+
+	res, err := weather.CityWeatherDailyGet(cityModel[0].PinYin)
 	if err != nil {
 		fmt.Println(err.Error())
 	} else {

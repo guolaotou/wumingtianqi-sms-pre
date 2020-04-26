@@ -3,7 +3,7 @@ package sms_pre
 
 import (
 	"fmt"
-	. "wumingtianqi-sms-pre/model/sms_pre"
+	. "wumingtianqi-sms-pre/model/order"
 )
 
 // 生产者：接收所有订单，然后判断这些函数是否需要发送短信，如果需要，则放到chan里

@@ -1,4 +1,4 @@
-package sms_pre
+package order
 
 type Model struct {
 	UserId int    `json:"user_id"`
