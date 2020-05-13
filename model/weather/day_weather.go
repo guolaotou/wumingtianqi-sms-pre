@@ -1,5 +1,7 @@
 package weather
 
+import "wumingtianqi-sms-pre/model/common"
+
 // 历史天气表
 type DayWeather struct {
 	CityPinYin    string `json:"city_pin_yin" xorm:"pk VARCHAR(30)"`
@@ -16,3 +18,33 @@ type DayWeather struct {
 	Humidity      int    `json:"humidity" xorm:"INT(11)"`
 }
 
+func (s *DayWeather) Create() error {
+	if _, err := common.Engine.InsertOne(s); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *DayWeather) Update() error {
+	if _, err := common.Engine.Where(
+		"city_pin_yin=?", s.CityPinYin).And(
+			"date_id=?", s.DateId).Update(s); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *DayWeather) Delete() error {
+	if _, err := common.Engine.Delete(s); err != nil {
+		return err
+	}
+	return nil
+}
+
+func QueryByCityDate(city string, date int) (*DayWeather, bool, error) {
+	d := new(DayWeather)
+	has, err := common.Engine.Where(
+		"city_pin_yin=?", city).And(
+			"date_id=?", date).Get(d)
+	return d, has, err
+}

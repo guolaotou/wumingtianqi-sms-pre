@@ -11,7 +11,7 @@ import (
 	"wumingtianqi-sms-pre/model"
 	"wumingtianqi-sms-pre/model/city"
 	. "wumingtianqi-sms-pre/model/order"
-	"wumingtianqi-sms-pre/tests"
+	"wumingtianqi-sms-pre/testing"
 	"wumingtianqi-sms-pre/utils"
 )
 
@@ -38,7 +38,7 @@ func main() {
 		fmt.Println(res)
 	}
 	os.Exit(0)
-	tests.MakeData() // 模拟每天凌晨跑出来今日的订单
+	testing.MakeData() // 模拟每天凌晨跑出来今日的订单
 	c := make(chan Model, utils.BufferSms)
 	cTmp := make(chan string, utils.BufferSms)
 

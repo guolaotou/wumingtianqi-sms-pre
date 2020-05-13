@@ -9,6 +9,7 @@ import (
 	"wumingtianqi-sms-pre/model/city"
 	"wumingtianqi-sms-pre/model/common"
 	"wumingtianqi-sms-pre/model/order"
+	"wumingtianqi-sms-pre/model/weather"
 	"xorm.io/core"
 )
 //
@@ -33,6 +34,10 @@ func InitMysql() {
 	}
 	if syncErr := common.Engine.Sync2(new(city.City)); syncErr != nil {
 		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync City mysql: ", syncErr.Error())
+		os.Exit(1)
+	}
+	if syncErr := common.Engine.Sync2(new(weather.DayWeather)); syncErr != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync DayWeather mysql: ", syncErr.Error())
 		os.Exit(1)
 	}
 }

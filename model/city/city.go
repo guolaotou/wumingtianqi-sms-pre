@@ -1,7 +1,6 @@
 package city
 
 import (
-	"fmt"
 	"wumingtianqi-sms-pre/model/common"
 )
 
@@ -10,23 +9,39 @@ type City struct {
 	Province string `json:"province" xorm:"VARCHAR(20)"`
 	City     string `json:"city" xorm:"VARCHAR(20)"`
 	District string `json:"district" xorm:"VARCHAR(20)"`
-	PinYin   string `json:"pin_yin" xorm:"VARCHAR(30)"`
+	PinYin   string `json:"pin_yin" xorm:"index VARCHAR(30)"`
 	Abbr     string `json:"abbr" xorm:"VARCHAR(60)"`
 }
 
-func (u *City) TableName() string {
-	return "city"
+func (c * City) Create() error {
+	if _, err := common.Engine.InsertOne(c); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *City) Update() error {
+	if _, err := common.Engine.Where("id=?", c.Id).Update(c); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *City) Delete() error {
+	if _, err := common.Engine.Delete(c); err != nil {
+		return err
+	}
+	return nil
+}
+
+func QueryByPinYin(pinYin string) (*City, bool, error) {
+	c := new(City)
+	has, err := common.Engine.Where("pin_yin=?", pinYin).Get(c)
+	return c, has, err
 }
 
 func GetAllCity() ([]City, error) {
 	cityList := make([]City, 0)
 	err := common.Engine.Find(&cityList)
 	return cityList, err
-}
-
-func GetOneCity()(*City, error) {
-	city := new(City)
-	has, err := common.Engine.Where("id=?", 1).Get(city)
-	fmt.Println("has", has)
-	return city, err
 }

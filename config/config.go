@@ -15,9 +15,14 @@ func NewConfig() *Config {
 	}
 }
 
-func LoadConfig() (*Config, error) {
+func LoadConfig(path... string) (*Config, error) {
 	cfg := NewConfig()
+
 	configPath := `conf/config.json`
+	if path != nil {  // 跑测试用例的时候路径用传过来的
+		configPath = path[0] + configPath
+	}
+
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		configPath = `conf/config.template.json`
 		if _, err := os.Stat(configPath); os.IsNotExist(err) {
