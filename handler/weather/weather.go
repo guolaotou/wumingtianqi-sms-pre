@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"wumingtianqi-sms-pre/config"
+	"wumingtianqi-sms-pre/model/city"
 )
 
 // 根据指定城市，获取新知天气信息
@@ -165,3 +166,41 @@ func CityWeatherDailyGet(cityPinYin string) (XinZhiWeatherDailyResults, error) {
 }
 
 // todo 分一些文件，条例清晰一点
+
+func StorageWeatherDaily() {
+	/*
+	每日存储天气信息
+	1. 获取城市列表
+	2. 遍历城市列表，获取天气信息，放入channel（生产者）
+	3. 不断从channel中获取天气信息，存入数据库（消费者）
+	tips:
+	控制生产者速率 20条 / min
+	控制消费者，当存满100条，存一次
+	 */
+	cityList, err := city.GetAllCity()
+	if  err != nil {
+		panic(err)
+	}
+
+	if cityList == nil {  // todo 验证这种写法
+		return
+	}
+
+	for i := 0; i < len(cityList); i++ {
+		// 获取城市天气信息
+		//pinYin := *cityList[i].PinYin
+		pinYin := "beijing"
+		res, err := Get2XinZhiWhether(false, pinYin)
+		if err != nil {
+			panic(err)
+		}
+
+		// 存入数据库
+		fmt.Println(res)
+		// todo
+		// test
+
+
+	}
+
+}

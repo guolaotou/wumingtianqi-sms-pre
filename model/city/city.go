@@ -40,7 +40,7 @@ func QueryByPinYin(pinYin string) (*City, bool, error) {
 	return c, has, err
 }
 
-func GetAllCity() ([]City, error) {
+func GetAllCity() ([]City, error) {  // todo bug fixed
 	cityList := make([]City, 0)
 	err := common.Engine.Find(&cityList)
 	return cityList, err
