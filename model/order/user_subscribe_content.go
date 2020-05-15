@@ -33,18 +33,3 @@ func GetAll() ([]UserSubscribeContent, error) {
 	err := common.Engine.Find(&cityList)
 	return cityList, err
 }
-
-func init() {
-	println("1111")
-	//if syncErr := model.Engine.Sync2(new(UserSubscribeContent)); syncErr != nil {
-	//	_, _ = fmt.Fprintln(os.Stderr, "Failed to sync UserSubscribeContent mysql: ", syncErr.Error())
-	//	os.Exit(1)
-	//}
-}
-
-//func init(){
-//	if syncErr := model.Engine.Sync2(new(city.City)); syncErr != nil {
-//		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync City mysql: ", syncErr.Error())
-//		os.Exit(1)
-//	}
-//}

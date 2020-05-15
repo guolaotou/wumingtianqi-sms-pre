@@ -1,10 +1,15 @@
 package config
 
 type Config struct {
+	Main       Main    `json:"main"`
 	Log        Log     `json:"log"`
 	Weather    Weather `json:"weather"`
 	Debug      bool    `json:"-"`
 	ConfigFile string  `json:"-"`
+}
+
+type Main struct {
+	Mysql string `json:"mysql"`
 }
 
 type Log struct {

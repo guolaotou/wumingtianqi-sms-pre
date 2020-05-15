@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"sync"
 	"time"
 	"wumingtianqi-sms-pre/config"
 	"wumingtianqi-sms-pre/handler/sms_pre"
-	"wumingtianqi-sms-pre/handler/weather"
 	"wumingtianqi-sms-pre/model"
 	"wumingtianqi-sms-pre/model/city"
 	. "wumingtianqi-sms-pre/model/order"
@@ -24,20 +22,19 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	fmt.Println("cityModel", cityModel)
-	fmt.Println("cityModel", cityModel[0].PinYin)
-	city, err := city.GetOneCity()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	fmt.Println("city", city)
+	//fmt.Println("cityModel", cityModel[0].PinYin)
+	//city, err := city.GetOneCity()
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//}
+	//fmt.Println("city", city)
 
-	res, err := weather.CityWeatherDailyGet(cityModel[0].PinYin)
-	if err != nil {
-		fmt.Println(err.Error())
-	} else {
-		fmt.Println(res)
-	}
-	os.Exit(0)
+	//res, err := weather.CityWeatherDailyGet(cityModel[0].PinYin)
+	//if err != nil {
+	//	fmt.Println(err.Error())
+	//} else {
+	//	fmt.Println(res)
+	//}
 	testing.MakeData() // 模拟每天凌晨跑出来今日的订单
 	c := make(chan Model, utils.BufferSms)
 	cTmp := make(chan string, utils.BufferSms)

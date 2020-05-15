@@ -1,4 +1,7 @@
 {
+  "main": {
+    "mysql": "userxxx:pwdxxx@(localhostxxx:3306)/wumingtianqi"
+  },
   "log": {
     "app_file": "app33.log"
   },
