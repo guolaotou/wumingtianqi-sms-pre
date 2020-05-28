@@ -5,11 +5,6 @@ import (
 	"wumingtianqi-sms-pre/model/common"
 )
 
-//type CityJson struct {
-//	Province string `json:"province"`
-//	City     string `json:"city"`
-//	Region   string `json:"region"`
-//}
 
 type RemindConditionJson struct {
 }
@@ -19,7 +14,6 @@ type UserSubscribeContent struct {
 	UserId      int `json:"user_id" xorm:"INT(11)"`
 	SubscribeId int `json:"subscribe_id" xorm:"INT(11)"`
 	RemindTime  int `json:"remind_time" xorm:"INT(4)"`
-	//RemindCity        CityJson        `json:"remind_city" xorm:"json"`      // todo 初始化表时，因为xorm的限制，该字段会被初始化为text字段；需要进入mysql，手动将该字段更改为json格式：alter table wumingtianqi.user_subscribe_content change remind_city remind_city  json;
 	RemindCity        string              `json:"remind_city" xorm:"json"`      // 城市的拼音
 	RemindCondition   RemindConditionJson `json:"remind_condition" xorm:"json"` // todo 同上：alter table wumingtianqi.user_subscribe_content change remind_condition remind_condition  json;
 	RemindTemplate    int                 `json:"remind_template" xorm:"INT(11)"`
@@ -33,3 +27,5 @@ func GetAll() ([]UserSubscribeContent, error) {
 	err := common.Engine.Find(&cityList)
 	return cityList, err
 }
+
+// 订阅 todo，然后写代码控制订阅的模块（较多）
