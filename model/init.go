@@ -10,6 +10,7 @@ import (
 	"wumingtianqi-sms-pre/model/city"
 	"wumingtianqi-sms-pre/model/common"
 	"wumingtianqi-sms-pre/model/order"
+	"wumingtianqi-sms-pre/model/remind"
 	"wumingtianqi-sms-pre/model/weather"
 	"xorm.io/core"
 )
@@ -44,6 +45,18 @@ func InitMysql() {
 	}
 	if syncErr := common.Engine.Sync2(new(order.RemindCondition)); syncErr != nil {
 		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync RemindCondition mysql: ", syncErr.Error())
+		os.Exit(1)
+	}
+	if syncErr := common.Engine.Sync2(new(remind.RemindPattern)); syncErr != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync RemindPattern mysql: ", syncErr.Error())
+		os.Exit(1)
+	}
+	if syncErr := common.Engine.Sync2(new(order.Order)); syncErr != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync Order mysql: ", syncErr.Error())
+		os.Exit(1)
+	}
+	if syncErr := common.Engine.Sync2(new(order.OrderDetail)); syncErr != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync OrderDetail mysql: ", syncErr.Error())
 		os.Exit(1)
 	}
 }
