@@ -1,5 +1,9 @@
 package order
 
+import (
+	"wumingtianqi-sms-pre/model/common"
+)
+
 // 用户订阅表
 type Order struct {
 	OrderId         int    `json:"order_id" xorm:"pk autoincr INT(11)"`
@@ -17,27 +21,54 @@ type OrderDetail struct {
 	Value           int `json:"value" xorm:"INT(11)"` // 数值
 }
 
-/*
-remindPattern:
-[
-{
-"remind_pattern": 1,
-"value": 1
+func (m *Order) Create() error {
+	if _, err := common.Engine.InsertOne(m); err != nil {
+		return err
+	}
+	return nil
 }
-]
- */
 
-/*
-Order
-OrderId UserId RemindCity RemindTime RemindPatternId Value
-1 149 Beijing 0900 1 20
- */
-// todo 1 order表改，可以同时多个提醒；
-// todo lib写逻辑：
-/*
-1. 用户获取所有提醒模式
-2. 用户配置提醒模式数值，存到order表里
-3. lib: 7种提醒模式分别做处理
-3.1 todo 测试用例：测以上7种（晚上可以做？）
-todo Then 整理代码结构、er图、数据库表设计
- */
+func (m *Order) Update() error {
+	if _, err := common.Engine.Where("order_id=?", m.OrderId).Update(m); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Order) Delete() error {
+	if _, err := common.Engine.Delete(m); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Order) QueryOneByOrderId(orderId int) (*Order, bool, error) {
+	has, err := common.Engine.Where("order_id=?", orderId).Get(m)
+	return m, has, err
+}
+
+func (m *Order) QueryListByUserId(userId int) ([]Order, error) {
+	modelList := make([]Order, 0)
+	err := common.Engine.Find(&modelList)
+	return modelList, err
+}
+
+func (m *Order) QueryListByCity(city string) ([]Order, error) {
+	modelList := make([]Order, 0)
+	err := common.Engine.Find(&modelList)
+	return modelList, err
+}
+
+func (m * Order) QueryListByTime(time string) ([]Order, error) {
+	modelList := make([]Order, 0)
+	err :=common.Engine.Find(&modelList)
+	return modelList, err
+}
+
+func (m *OrderDetail) QueryListByOrderId(orderId int) ([]OrderDetail, error) {
+	modelList := make([]OrderDetail, 0)
+	err := common.Engine.Find(&modelList)
+	return modelList, err
+}
+
+// todo 以上写测试用例

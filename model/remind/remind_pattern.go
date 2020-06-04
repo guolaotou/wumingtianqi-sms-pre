@@ -1,5 +1,7 @@
 package remind
 
+import "wumingtianqi-sms-pre/model/common"
+
 // todo 提醒模式表
 // todo order表（原user_subscribe_content改一下）
 // 20200528
@@ -18,6 +20,11 @@ type RemindPattern struct {
 	PriorityDisplay   int    `json:"priority_display" xorm:"INT(3)"`        // 前端默认显示优先级
 	PriorityRemind    int    `json:"priority_remind" xorm:"INT(3)"`         // 提醒默认优先级
 	//Tips           string `json:"tips" xorm:"VARCHAR(40)"`         // 温馨提醒
+}
+
+func (m *RemindPattern) QueryOneById(id int) (*RemindPattern, bool, error) {
+	has, err := common.Engine.Where("id=?", id).Get(m)
+	return m, has, err
 }
 
 // todo 造数据

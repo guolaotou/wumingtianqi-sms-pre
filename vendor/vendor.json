@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "pkbjLBkb2ICTPiyK5JXorXLgSlU=",
+			"path": "github.com/bradfitz/slice",
+			"revision": "2b758aa73013d2b1f11077aeca87ea042a1438bf",
+			"revisionTime": "2018-08-09T15:42:50Z"
+		},
+		{
 			"checksumSHA1": "qlEzrgKgIkh7y0ePm9BNo1cNdXo=",
 			"path": "github.com/gin-contrib/sse",
 			"revision": "43f0f29dbd2b3f0feeebff91fd9cda22db296938",
@@ -89,6 +95,12 @@
 			"path": "github.com/ugorji/go/codec",
 			"revision": "42bc974514ff101a54c6b72a0e4dee29d96c0b26",
 			"revisionTime": "2019-08-12T10:43:08Z"
+		},
+		{
+			"checksumSHA1": "jXRCti05lm7QXvZR20jzorhu8QI=",
+			"path": "go4.org/reflectutil",
+			"revision": "f5505b9728ddf920bb673137648788c5ac99de1b",
+			"revisionTime": "2020-04-11T21:18:56Z"
 		},
 		{
 			"checksumSHA1": "Ld0iviZSRGAKK6WSoti+3++1RmY=",
