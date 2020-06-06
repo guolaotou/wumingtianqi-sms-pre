@@ -14,6 +14,7 @@ import (
 )
 
 func main() {
+	println("diandian1")
 	cfg, _ := config.LoadConfig()
 	fmt.Println(cfg.Log)
 	model.InitMysql()

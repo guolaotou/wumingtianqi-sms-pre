@@ -2,7 +2,7 @@ package order
 
 import (
 	"fmt"
-	"github.com/bradfitz/slice"
+	"sort"
 	"strconv"
 	orderModel "wumingtianqi-sms-pre/model/order"
 	"wumingtianqi-sms-pre/model/remind"
@@ -147,14 +147,13 @@ func SpliceOrders(time string) {
 				println(2)
 			}
 		}
-		slice.Sort(patterns[:], func(i, j int) bool {
+		sort.Slice(patterns, func(i, j int) bool {  // list内包含字典排序，参考https://stackoverflow.com/questions/28999735/what-is-the-shortest-way-to-simply-sort-an-array-of-structs-by-arbitrary-field
 			return patterns[i].Priority < patterns[j].Priority
 		})
 		// 拼接提醒用语，优先级，for循环后按照优先级排序，然后最终拼接用语，加到队列
 		// [[有阵雨, 1], [最高气温较前一日增加5度，升至25度，注意防范, 2]]
 		fmt.Println("patterns", patterns)
 		// 提醒： 明日 有阵雨，注意带伞；（优先级1）最高气温较前一日增加5度，升至25度，注意防范（优先级2）
-		// or 提醒: 明日有阵雨；（优先级1）最高气温较前一日增加5度，升至25度，注意带伞,注意防范（优先级2）
 	}
 
 	// todo 后面考虑用remind_pattern的met_classification字段做switch case，需要改表：remind_object -> remind_object_id

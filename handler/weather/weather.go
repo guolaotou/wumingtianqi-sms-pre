@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"wumingtianqi-sms-pre/config"
 	"wumingtianqi-sms-pre/model/city"
+	"wumingtianqi-sms-pre/model/common"
+	"wumingtianqi-sms-pre/model/weather"
+	"wumingtianqi-sms-pre/utils"
 )
 
 // 根据指定城市，获取新知天气信息
@@ -181,6 +184,7 @@ func StorageWeatherDaily() {
 	if  err != nil {
 		panic(err)
 	}
+	fmt.Println("cityList", cityList)
 
 	if cityList == nil {  // todo 验证这种写法
 		return
@@ -189,18 +193,74 @@ func StorageWeatherDaily() {
 	for i := 0; i < len(cityList); i++ {
 		// 获取城市天气信息
 		//pinYin := *cityList[i].PinYin
-		pinYin := "beijing"
+		pinYin := cityList[i].PinYin  // "beijing"
 		res, err := Get2XinZhiWhether(false, pinYin)
 		if err != nil {
 			panic(err)
 		}
 
-		// 存入数据库
+		// 获取今天日期！
+		localDateStr := utils.GetSpecificDate8Str(0)
+		fmt.Println("localDateStr", localDateStr)
+
+
+		// 存入数据库: 如果某天没有，那就存；否则，更新天气信息
 		fmt.Println(res)
-		// todo
 		// test
+		fmt.Println("duandian1")
+		temp := weather.DayWeather{
+			CityPinYin:    "tianjin",
+			DateId:        0,
+			TextDay:       "",
+			CodeDay:       0,
+			TextNight:     "",
+			CodeNight:     0,
+			High:          0,
+			Low:           0,
+			WindDirection: "",
+			WindScale:     0,
+			WindSpeed:     0,
+			Humidity:      0,
+		}
+		dayWeatherList := make([]weather.DayWeather, 0)
+		dayWeatherList = append(dayWeatherList, temp)
+		dayWeatherList = append(dayWeatherList, temp)
+
+		dayWeatherInstance := weather.DayWeather{}
+		dayWeatherInstance.ReplaceMysql(dayWeatherList)
+
+		//aa := `('tianjin', '20200508', '晴', '2', '雨'
+		//		, '1', '40', '10', '南', '2'
+		//		, '10', '20')`
+		fmt.Println(dayWeatherList)
 
 
+		// xorm replace ...string用作key，tianjin, 20200508 当做value?
+		// 封装一个replace函数，传入表名，key值，value
+		//
+		toExecSql := `
+			REPLACE INTO wumingtianqi.day_weather (city_pin_yin, date_id, text_day, code_day, text_night, code_night, high, low, wind_direction, wind_scale, wind_speed, humidity)
+			VALUES ('tianjin', '20200508', '晴', '2', '雨'
+				, '1', '40', '10', '南', '2'
+				, '10', '20'), ('tianjin', '20200507', '晴', '1', '晴'
+				, '1', '40', '10', '南', '2'
+				, '10', '20');
+			`
+		// todo values后面的参数采用拼接的方式
+		engine := common.Engine
+		_, err = engine.Exec(toExecSql)  // 参考 https://www.geek-share.com/detail/2717393840.html
+		if err != nil {
+			panic(err)
+		}
 	}
-
 }
+
+
+
+
+
+
+
+
+
+

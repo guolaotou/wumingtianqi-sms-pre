@@ -91,6 +91,12 @@
 			"revisionTime": "2018-07-18T01:23:57Z"
 		},
 		{
+			"checksumSHA1": "u//XSMufbjY1jXGHAQZF6e2Yy3c=",
+			"path": "github.com/robfig/cron",
+			"revision": "6a8421bcff44c2a9889075724070baaebf8dcd72",
+			"revisionTime": "2020-05-18T08:58:33Z"
+		},
+		{
 			"checksumSHA1": "JWmqQjxnUg8PRe1QfYCmzAcWDvM=",
 			"path": "github.com/ugorji/go/codec",
 			"revision": "42bc974514ff101a54c6b72a0e4dee29d96c0b26",

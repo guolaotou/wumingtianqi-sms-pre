@@ -18,6 +18,25 @@ type DayWeather struct {
 	Humidity      int    `json:"humidity" xorm:"INT(11)"`
 }
 
+
+func (s *DayWeather)ReplaceMysql(dayWeatherList []DayWeather) error {  // todo 尝试看xorm源码，实现replace功能 !important
+	//values := "VALUES(%s)"
+	// todo today 把拼接字符串写了；
+	// todo 获取天气并存取的代码，至少北京完成，控制1小时抓取1次；存取 & 更新
+	// todo Then 2个模式跑？拼接提醒信息
+	// todo 邮件发送
+	// ops 挂上服务器
+	_ = `
+			REPLACE INTO wumingtianqi.day_weather (city_pin_yin, date_id, text_day, code_day, text_night, code_night, high, low, wind_direction, wind_scale, wind_speed, humidity)
+			VALUES ('tianjin', '20200508', '晴', '2', '雨'
+				, '1', '40', '10', '南', '2'
+				, '10', '20'), ('tianjin', '20200507', '晴', '1', '晴'
+				, '1', '40', '10', '南', '2'
+				, '10', '20');
+			`
+	return nil
+}
+
 func (s *DayWeather) Create() error {
 	if _, err := common.Engine.InsertOne(s); err != nil {
 		return err

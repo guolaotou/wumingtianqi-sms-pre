@@ -7,6 +7,14 @@ import (
 	"time"
 )
 
+// 获取指定日期，并拼接成8位数字的格式，例如20200606，默认今天
+func GetSpecificDate8Str(OffsetDay int) string {
+	durationNum, _ := time.ParseDuration(strconv.Itoa(28800 + OffsetDay * 3600 * 24) + "s") // 时区偏移量（北京时间）
+	localDate := time.Now().UTC().Add(durationNum)
+	localDateStr := localDate.Format("20060102")
+	return localDateStr
+}
+
 // 获取指定时间的时分，默认北京时间(4位数字的str格式)
 func GetLocalHourMin4Str() string {
 	durationNum, _ := time.ParseDuration(strconv.Itoa(28800) + "s") // 时区偏移量（北京时间）
@@ -37,9 +45,4 @@ func IsContain(obj interface{}, target interface{}) (bool, error) {
 		}
 	}
 	return false, errors.New("obj is not in target")
-}
-
-// 二维数组排序 参考
-// https://stackoverflow.com/questions/28999735/what-is-the-shortest-way-to-simply-sort-an-array-of-structs-by-arbitrary-field
-func testtt() {
 }
