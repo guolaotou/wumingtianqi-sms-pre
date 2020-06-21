@@ -1,6 +1,13 @@
 package weather
 
-import "wumingtianqi-sms-pre/model/common"
+import (
+	"fmt"
+	"reflect"
+	"strconv"
+	"strings"
+	"wumingtianqi-sms-pre/model/common"
+	"xorm.io/core"
+)
 
 // 历史天气表
 type DayWeather struct {
@@ -18,14 +25,61 @@ type DayWeather struct {
 	Humidity      int    `json:"humidity" xorm:"INT(11)"`
 }
 
+func (m *DayWeather)TableName() string{
+	return "day_weather"
+}
 
-func (s *DayWeather)ReplaceMysql(dayWeatherList []DayWeather) error {  // todo 尝试看xorm源码，实现replace功能 !important
+func (m *DayWeather)PreReplaceMysql(dayWeatherModel DayWeather) string {  // todo 尝试看xorm源码，实现replace功能 !important
 	//values := "VALUES(%s)"
 	// todo today 把拼接字符串写了；
 	// todo 获取天气并存取的代码，至少北京完成，控制1小时抓取1次；存取 & 更新
 	// todo Then 2个模式跑？拼接提醒信息
 	// todo 邮件发送
 	// ops 挂上服务器
+
+	bb := strings.ToLower("Name")
+	fmt.Println("bb", bb)
+
+	t := reflect.TypeOf(dayWeatherModel)
+	val := reflect.ValueOf(dayWeatherModel)
+
+	var columnStr string
+	var valueStr string
+	count := val.NumField()
+	mapper := core.GonicMapper{}
+	for i := 0; i < count; i++ { // todo 以后可以封装一个函数，Values后面一次性拼接多个model
+		// 拼接字段
+		columnStr += mapper.Obj2Table(t.Field(i).Name)
+		if i != count - 1 {
+			columnStr += ", "
+		}
+
+		// 拼接value
+		field := val.Field(i)
+		switch field.Kind() {
+		case reflect.Int:
+			valueStr += strconv.Itoa(int(field.Int()))
+		case reflect.String:
+			valueStr += "'" + field.String() + "'"
+		}
+		if i != count - 1 {
+			valueStr += ", "
+		}
+	}
+	toExecSql := fmt.Sprintf(`REPLACE INTO %s (%s) VALUES (%s);`, dayWeatherModel.TableName(), columnStr, valueStr)
+	fmt.Println("toExecSql", toExecSql)
+
+	//var aa  string
+	//aa = "`"
+	//	// 写一个函数，用于拼接sql值。里面识别非int,需要加引号？
+	//	fmt.Println("lala", reflect.TypeOf(dayWeatherList[i].CityPinYin))
+	//	aa += "'" + dayWeatherList[i].CityPinYin + "'"
+	//	if i != len(dayWeatherList) - 1 {
+	//		aa += ","
+	//	}
+	//aa += "`"
+
+
 	_ = `
 			REPLACE INTO wumingtianqi.day_weather (city_pin_yin, date_id, text_day, code_day, text_night, code_night, high, low, wind_direction, wind_scale, wind_speed, humidity)
 			VALUES ('tianjin', '20200508', '晴', '2', '雨'
@@ -34,27 +88,28 @@ func (s *DayWeather)ReplaceMysql(dayWeatherList []DayWeather) error {  // todo �
 				, '1', '40', '10', '南', '2'
 				, '10', '20');
 			`
-	return nil
+
+	return toExecSql
 }
 
-func (s *DayWeather) Create() error {
-	if _, err := common.Engine.InsertOne(s); err != nil {
+func (m *DayWeather) Create() error {
+	if _, err := common.Engine.InsertOne(m); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *DayWeather) Update() error {
+func (m *DayWeather) Update() error {
 	if _, err := common.Engine.Where(
-		"city_pin_yin=?", s.CityPinYin).And(
-			"date_id=?", s.DateId).Update(s); err != nil {
+		"city_pin_yin=?", m.CityPinYin).And(
+			"date_id=?", m.DateId).Update(m); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *DayWeather) Delete() error {
-	if _, err := common.Engine.Delete(s); err != nil {
+func (m *DayWeather) Delete() error {
+	if _, err := common.Engine.Delete(m); err != nil {
 		return err
 	}
 	return nil

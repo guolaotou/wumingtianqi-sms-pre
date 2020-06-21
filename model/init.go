@@ -31,6 +31,9 @@ func InitMysql() {
 	common.Engine.SetMaxIdleConns(1000)
 	common.Engine.SetMaxOpenConns(1000)
 	common.Engine.SetConnMaxLifetime(20 * time.Second)
+	fmt.Println("duandian2")
+	fmt.Println("duandian2", mysqlConfig)
+
 	if syncErr := common.Engine.Sync2(new(order.UserSubscribeContent)); syncErr != nil {
 		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync UserSubscribeContent mysql: ", syncErr.Error())
 		os.Exit(1)

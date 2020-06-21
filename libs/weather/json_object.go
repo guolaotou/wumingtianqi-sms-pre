@@ -36,3 +36,20 @@ type XinZhiWeatherDailyItem struct {
 	WindScale           string `json:"wind_scale"`
 	Humidity            string `json:"humidity"`
 }
+
+//type XinZhiWeatherDailyItem struct {
+//	Date                string `json:"date"`
+//	TextDay             string `json:"text_day"`
+//	CodeDay             int    `json:"code_day"`
+//	TextNight           string `json:"text_night"`
+//	CodeNight           int    `json:"code_night"`
+//	High                int    `json:"high"`
+//	Low                 int    `json:"low"`
+//	Rainfall            string `json:"rainfall"`
+//	Precip              string `json:"precip"`
+//	WindDirection       string `json:"wind_direction"`
+//	WindDirectionDegree string `json:"wind_direction_degree"`
+//	WindSpeed           int    `json:"wind_speed"`
+//	WindScale           int    `json:"wind_scale"`
+//	Humidity            int    `json:"humidity"`
+//}

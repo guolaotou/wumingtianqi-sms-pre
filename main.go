@@ -14,7 +14,6 @@ import (
 )
 
 func main() {
-	println("diandian1")
 	cfg, _ := config.LoadConfig()
 	fmt.Println(cfg.Log)
 	model.InitMysql()
@@ -72,4 +71,6 @@ func main() {
 	}(ticker1)
 
 	wg.Wait()
+	// todo 用更好的方式实现生产者消费者模式（pubsub redis等），写在cron里
+	// 然后main里的代码整理一下收藏起来，放到其他文件夹
 }
