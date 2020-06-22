@@ -3,6 +3,36 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "at2FlZRDRt6UEbIvCsuzHmG7/u4=",
+			"path": "github.com/ThreeDotsLabs/watermill",
+			"revision": "5b98ac2ff083b6f68bcec484168ad4d22cb08109",
+			"revisionTime": "2020-06-04T07:41:53Z"
+		},
+		{
+			"checksumSHA1": "hw2DDWSxKHJJ0HorNFmFHMtffGo=",
+			"path": "github.com/ThreeDotsLabs/watermill/internal",
+			"revision": "5b98ac2ff083b6f68bcec484168ad4d22cb08109",
+			"revisionTime": "2020-06-04T07:41:53Z"
+		},
+		{
+			"checksumSHA1": "GRNiL/SZpkCls0qAyJ57dVYAR88=",
+			"path": "github.com/ThreeDotsLabs/watermill/message",
+			"revision": "5b98ac2ff083b6f68bcec484168ad4d22cb08109",
+			"revisionTime": "2020-06-04T07:41:53Z"
+		},
+		{
+			"checksumSHA1": "URMAvDhi48ZV6G6eRll7dS/ODT8=",
+			"path": "github.com/ThreeDotsLabs/watermill/pubsub/gochannel",
+			"revision": "5b98ac2ff083b6f68bcec484168ad4d22cb08109",
+			"revisionTime": "2020-06-04T07:41:53Z"
+		},
+		{
+			"checksumSHA1": "ae1ekXVLbdqBLDUBSGr62Qw3y5Y=",
+			"path": "github.com/ThreeDotsLabs/watermill/pubsub/sync",
+			"revision": "5b98ac2ff083b6f68bcec484168ad4d22cb08109",
+			"revisionTime": "2020-06-04T07:41:53Z"
+		},
+		{
 			"checksumSHA1": "pkbjLBkb2ICTPiyK5JXorXLgSlU=",
 			"path": "github.com/bradfitz/slice",
 			"revision": "2b758aa73013d2b1f11077aeca87ea042a1438bf",
@@ -67,10 +97,20 @@
 			"revisionTime": "2020-05-14T20:44:37Z"
 		},
 		{
+			"checksumSHA1": "i7SytLVKSK7ZDYTC0nJhIHn0gSs=",
+			"path": "github.com/google/uuid",
+			"revision": "cb32006e483f2a23230e24209cf185c65b477dbf",
+			"revisionTime": "2020-05-19T14:17:26Z"
+		},
+		{
 			"checksumSHA1": "4KLpl96KrN8/1mEbpQPY4PpcJVY=",
 			"path": "github.com/json-iterator/go",
 			"revision": "55287ed53a0aca60fb6556a660240938befdf1ef",
 			"revisionTime": "2020-05-08T07:08:25Z"
+		},
+		{
+			"path": "github.com/lithammer/shortuuid/v3",
+			"revision": ""
 		},
 		{
 			"checksumSHA1": "CQ794EIFp/4zTVi4redzOXOPY8k=",
@@ -89,6 +129,18 @@
 			"path": "github.com/modern-go/reflect2",
 			"revision": "94122c33edd36123c84d5368cfb2b69df93a0ec8",
 			"revisionTime": "2018-07-18T01:23:57Z"
+		},
+		{
+			"checksumSHA1": "pxneUdGXTnA+L24gMPqYyhLba2E=",
+			"path": "github.com/oklog/ulid",
+			"revision": "a41d229797d91e914323f27d52d1053d2e709119",
+			"revisionTime": "2019-09-04T08:47:58Z"
+		},
+		{
+			"checksumSHA1": "Qo2E/26skb9mZQ3b2Mh6QDkpBLs=",
+			"path": "github.com/pkg/errors",
+			"revision": "614d223910a179a466c1767a985424175c39b465",
+			"revisionTime": "2020-01-14T19:47:44Z"
 		},
 		{
 			"checksumSHA1": "u//XSMufbjY1jXGHAQZF6e2Yy3c=",
