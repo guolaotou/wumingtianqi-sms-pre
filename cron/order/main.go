@@ -24,7 +24,6 @@ func main() {
 	}
 
 	go process(messages)
-	go process(messages)
 
 	publishMessages(pubSub)
 }
@@ -38,7 +37,7 @@ func publishMessages(publisher message.Publisher) {
 			panic(err)
 		}
 
-		time.Sleep(6 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
 }
 

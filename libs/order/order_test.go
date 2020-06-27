@@ -12,10 +12,7 @@ import (
 func TestCity(t *testing.T) {
 	test.Setup()
 	orderLib.FakeWeather()
-
-
 	// 参数：时间，例如0900；查询所有order表中时间等于0900的
 	orderLib.SpliceOrders("0900")
-
 
 }

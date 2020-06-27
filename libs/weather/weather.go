@@ -128,7 +128,7 @@ func Get2XinZhiWhether(fakeData bool, cityPinYin string) (XinZhiWeatherDailyResu
             },
             "daily":[
                 {
-                    "date":"2020-06-21",
+                    "date":"2020-06-26",
                     "text_day":"多云",
                     "code_day":"4",
                     "text_night":"多云",
@@ -144,7 +144,7 @@ func Get2XinZhiWhether(fakeData bool, cityPinYin string) (XinZhiWeatherDailyResu
                     "humidity":"0"
                 },
                 {
-                    "date":"2020-06-22",
+                    "date":"2020-06-27",
                     "text_day":"多云",
                     "code_day":"4",
                     "text_night":"中雨",
@@ -160,7 +160,7 @@ func Get2XinZhiWhether(fakeData bool, cityPinYin string) (XinZhiWeatherDailyResu
                     "humidity":"48"
                 },
                 {
-                    "date":"2020-06-23",
+                    "date":"2020-06-28",
                     "text_day":"多云",
                     "code_day":"4",
                     "text_night":"多云",
@@ -176,7 +176,7 @@ func Get2XinZhiWhether(fakeData bool, cityPinYin string) (XinZhiWeatherDailyResu
                     "humidity":"53"
                 },
                 {
-                    "date":"2020-06-24",
+                    "date":"2020-06-29",
                     "text_day":"多云",
                     "code_day":"4",
                     "text_night":"晴",
@@ -192,7 +192,7 @@ func Get2XinZhiWhether(fakeData bool, cityPinYin string) (XinZhiWeatherDailyResu
                     "humidity":"43"
                 },
                 {
-                    "date":"2020-06-25",
+                    "date":"2020-06-30",
                     "text_day":"多云",
                     "code_day":"4",
                     "text_night":"小雨",

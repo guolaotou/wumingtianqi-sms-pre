@@ -9,8 +9,6 @@ import (
 	"wumingtianqi-sms-pre/utils"
 )
 
-// todo 改package
-
 // todo 用户建立订单
 // req 有一些参数
 // 中间处理过程比较麻烦？
