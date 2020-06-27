@@ -13,7 +13,6 @@ import (
 // 运行方法2：
 // go run cron/weather/main.go
 func main() {
-	fmt.Println("duandian1")
 	if _, err := config.LoadConfig(); err != nil {
 		fmt.Println(err.Error())
 	}

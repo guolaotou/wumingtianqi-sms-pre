@@ -27,7 +27,8 @@ func getSpecifyDurationHourMin(currentTime time.Time, duration time.Duration) st
 	return localDateStr
 }
 
-// 该脚本杨作测试时，加快时间速度
+// 测试时，用于加快时间速度
+// sudo go run scripts/speed_macbook_time.go
 func main() {
 	os := runtime.GOOS
 	if os != "darwin" {

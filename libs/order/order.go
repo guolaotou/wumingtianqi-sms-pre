@@ -2,8 +2,12 @@ package order
 
 import (
 	"fmt"
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill/message"
+	"log"
 	"sort"
 	"strconv"
+	"wumingtianqi-sms-pre/model/common"
 	orderModel "wumingtianqi-sms-pre/model/order"
 	"wumingtianqi-sms-pre/model/remind"
 	"wumingtianqi-sms-pre/utils"
@@ -54,7 +58,6 @@ type SplicePatternModel struct {
 
 func splicePattern1(city string, remindPattern *remind.RemindPattern) SplicePatternModel{
 	// 1. 突然降雨
-
 	// 枚举"天气现象"表，整理突然降雨的触发条件 ![1,2,3] -> [1,2,3]，考虑remind_pattern里新增一个extension字段（json格式），这个字段不同业务不一样，需要的东西也不一样。
 	// 降雨对应的id todo 以后再弄个天气代码映射表？或者在某个地方弄个静态变量存
 	RainPatternIds := []int{10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
@@ -76,7 +79,6 @@ func splicePattern1(city string, remindPattern *remind.RemindPattern) SplicePatt
 
 func splicePattern2(city string, remindPattern *remind.RemindPattern, value int) SplicePatternModel {
 	// 2. 突然升温
-
 	yesterdayWeather, todayWeather := FakeWeather()
 	highYesterday := yesterdayWeather[city]["high"].(int)
 	highToday := todayWeather[city]["high"].(int)
@@ -99,17 +101,18 @@ func SpliceOrders(time string) {
 	// 以上操作可以考虑分批开goroutine
 	order := orderModel.Order{}
 	orderModelList, err := order.QueryListByTime(time)
+	fmt.Println("orderModelList", orderModelList)
 	if err != nil {
 		panic(err)
 	}
 	for _, oneOrderModel := range orderModelList {
-		order_id := oneOrderModel.OrderId
+		orderId := oneOrderModel.OrderId
 		//user_id := oneOrderModel.UserId
 		city := oneOrderModel.RemindCity
 
 		// 根据order_id找到order_detail
 		orderDetail := orderModel.OrderDetail{}
-		orderDetailList, err := orderDetail.QueryListByOrderId(order_id)
+		orderDetailList, err := orderDetail.QueryListByOrderId(orderId)
 		if err != nil {
 			panic(err)
 		}
@@ -129,9 +132,9 @@ func SpliceOrders(time string) {
 					patterns = append(patterns, pattern1)
 				}
 			case 2: // 突然升温
-				pattern1 := splicePattern2(city, remindPattern, value)
-				if pattern1.Priority >= 1 {  // 以后可以用标准一点的用法
-					patterns = append(patterns, pattern1)
+				pattern2 := splicePattern2(city, remindPattern, value)
+				if pattern2.Priority >= 1 {  // 以后可以用标准一点的用法
+					patterns = append(patterns, pattern2)
 				}
 			case 3: // 突然降温
 				println(2)
@@ -150,9 +153,38 @@ func SpliceOrders(time string) {
 		})
 		// 拼接提醒用语，优先级，for循环后按照优先级排序，然后最终拼接用语，加到队列
 		// [[有阵雨, 1], [最高气温较前一日增加5度，升至25度，注意防范, 2]]
+		if len(patterns) >= 1{  // 需要提醒
+			msg := message.NewMessage(watermill.NewUUID(), []byte("Hello, world"))  // 封装用户信息和带拼接的短信
+			if err := common.PubSub.Publish("Topic.needToRemindOrder", msg); err != nil {
+				panic(err)
+			}
+		}
 		fmt.Println("patterns", patterns)
 		// 提醒： 明日 有阵雨，注意带伞；（优先级1）最高气温较前一日增加5度，升至25度，注意防范（优先级2）
 	}
 
 	// todo 后面考虑用remind_pattern的met_classification字段做switch case，需要改表：remind_object -> remind_object_id
 }
+
+// 每1分钟查看一次订单，将符合条件的放到队列里 - 子func
+func cronOrderFunc() {
+	// 得到当前的时间：精确到分钟，调用SpliceOrders
+	localDateStr := utils.GetLocalHourMin4Str()
+	log.Println("localDateStr", localDateStr)
+	SpliceOrders(localDateStr)
+}
+// func 每1分钟查看一次订单，将符合条件的放到队列里
+// pubsub参考: https://studygolang.com/articles/26894
+func CronOrder() {
+	c := utils.NewWithSeconds()
+	_, err := c.AddFunc("0 */1 * * * *", cronOrderFunc)  // 1分钟一次，且是整点
+	//_, err := c.AddFunc("*/2 * * * * *", cronOrderFunc)    // 为了测试，2秒钟1次
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	go c.Start()
+	defer c.Stop()
+
+	select {}
+}
+

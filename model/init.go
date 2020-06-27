@@ -2,6 +2,8 @@ package model
 
 import (
 	"fmt"
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill/pubsub/gochannel"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
 	"os"
@@ -14,10 +16,6 @@ import (
 	"wumingtianqi-sms-pre/model/weather"
 	"xorm.io/core"
 )
-//
-//var Engine *xorm.Engine
-
-
 func InitMysql() {
 	// todo 本地数据库init
 	var err error
@@ -31,7 +29,6 @@ func InitMysql() {
 	common.Engine.SetMaxIdleConns(1000)
 	common.Engine.SetMaxOpenConns(1000)
 	common.Engine.SetConnMaxLifetime(20 * time.Second)
-	fmt.Println("duandian2")
 	fmt.Println("duandian2", mysqlConfig)
 
 	if syncErr := common.Engine.Sync2(new(order.UserSubscribeContent)); syncErr != nil {
@@ -62,4 +59,11 @@ func InitMysql() {
 		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync OrderDetail mysql: ", syncErr.Error())
 		os.Exit(1)
 	}
+}
+
+func InitPubSub() {
+	common.PubSub = gochannel.NewGoChannel(
+		gochannel.Config{},
+		watermill.NewStdLogger(false, false),
+	)
 }

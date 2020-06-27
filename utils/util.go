@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"github.com/robfig/cron"
 	"reflect"
 	"strconv"
 	"time"
@@ -22,7 +23,7 @@ func GetSpecificDate8Int(OffsetDay int) int {
 	return localDateInt
 }
 
-// 获取指定时间的时分，默认北京时间(4位数字的str格式)
+// 获取当前北京时间的十分(4位数字的str格式)
 func GetLocalHourMin4Str() string {
 	durationNum, _ := time.ParseDuration(strconv.Itoa(28800) + "s") // 时区偏移量（北京时间）
 	localDate := time.Now().UTC().Add(durationNum)
@@ -30,9 +31,9 @@ func GetLocalHourMin4Str() string {
 	return localDateStr
 }
 
+// 获取指定时间的时分(4位数字的str格式)
 func GetSpecifyDurationHourMin(duration time.Duration) string {
-	durationNum, _ := time.ParseDuration(strconv.Itoa(28800) + "s") // 时区偏移量
-	localDate := time.Now().UTC().Add(durationNum).Add(duration)    // 北京时间加上指定偏移时间
+	localDate := time.Now().UTC().Add(duration)    // 加上指定偏移时间
 	localDateStr := localDate.Format("1504")
 	return localDateStr
 }
@@ -52,4 +53,10 @@ func IsContain(obj interface{}, target interface{}) (bool, error) {
 		}
 	}
 	return false, errors.New("obj is not in target")
+}
+
+func NewWithSeconds() *cron.Cron {
+	secondParser := cron.NewParser(cron.Second | cron.Minute |
+		cron.Hour | cron.Dom | cron.Month | cron.DowOptional | cron.Descriptor)
+	return cron.New(cron.WithParser(secondParser), cron.WithChain())
 }

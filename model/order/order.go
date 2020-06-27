@@ -61,7 +61,7 @@ func (m *Order) QueryListByCity(city string) ([]Order, error) {
 
 func (m * Order) QueryListByTime(time string) ([]Order, error) {
 	modelList := make([]Order, 0)
-	err :=common.Engine.Find(&modelList)
+	err :=common.Engine.Where("remind_time=?", time).Find(&modelList)
 	return modelList, err
 }
 
