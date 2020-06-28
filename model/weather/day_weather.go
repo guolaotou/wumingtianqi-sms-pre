@@ -2,6 +2,7 @@ package weather
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -67,7 +68,7 @@ func (m *DayWeather)PreReplaceMysql(dayWeatherModel DayWeather) string {  // tod
 		}
 	}
 	toExecSql := fmt.Sprintf(`REPLACE INTO %s (%s) VALUES (%s);`, dayWeatherModel.TableName(), columnStr, valueStr)
-	fmt.Println("toExecSql", toExecSql)
+	log.Println("toExecSql", toExecSql)
 
 	//var aa  string
 	//aa = "`"

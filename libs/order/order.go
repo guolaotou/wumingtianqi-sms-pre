@@ -1,12 +1,14 @@
 package order
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"log"
 	"sort"
 	"strconv"
+	"strings"
 	"wumingtianqi-sms-pre/model/common"
 	orderModel "wumingtianqi-sms-pre/model/order"
 	"wumingtianqi-sms-pre/model/remind"
@@ -154,7 +156,25 @@ func SpliceOrders(time string) {
 		// 拼接提醒用语，优先级，for循环后按照优先级排序，然后最终拼接用语，加到队列
 		// [[有阵雨, 1], [最高气温较前一日增加5度，升至25度，注意防范, 2]]
 		if len(patterns) >= 1{  // 需要提醒
-			msg := message.NewMessage(watermill.NewUUID(), []byte("Hello, world"))  // 封装用户信息和带拼接的短信
+			var tips string
+			for _, pattern := range patterns {
+				if tips == "" {
+					tips += pattern.RemindSplicedText
+				} else {
+					tips = strings.Join([]string{tips, pattern.RemindSplicedText}, ";")
+				}
+			}
+			needToRemindOrder := common.NeedToRemindOrder{
+				SubscriberId: oneOrderModel.UserId,
+				City:         city,
+				Tips:         tips,
+			}
+			needToRemindOrderJson, err := json.Marshal(needToRemindOrder)
+			if err != nil {
+				log.Println(err.Error())
+				panic(err)
+			}
+			msg := message.NewMessage(watermill.NewUUID(), needToRemindOrderJson)  // 封装用户信息和带拼接的短信
 			if err := common.PubSub.Publish("Topic.needToRemindOrder", msg); err != nil {
 				panic(err)
 			}
@@ -177,8 +197,8 @@ func cronOrderFunc() {
 // pubsub参考: https://studygolang.com/articles/26894
 func CronOrder() {
 	c := utils.NewWithSeconds()
-	_, err := c.AddFunc("0 */1 * * * *", cronOrderFunc)  // 1分钟一次，且是整点
-	//_, err := c.AddFunc("*/2 * * * * *", cronOrderFunc)    // 为了测试，2秒钟1次
+	//_, err := c.AddFunc("0 */1 * * * *", cronOrderFunc)  // 1分钟一次，且是整点
+	_, err := c.AddFunc("*/2 * * * * *", cronOrderFunc)    // 为了测试，2秒钟1次
 	if err != nil {
 		fmt.Println(err.Error())
 	}

@@ -27,7 +27,9 @@ func main() {
 	model.InitMysql()
 	model.InitPubSub()  // 如果主main也调用过了这个函数，重复调用会不会重复建立。
 	go order.CronOrder()  // 每1分钟查看一次订单，将符合条件的放到队列里
+
 	remind.PubSubOrder()  // 读取需要提醒的订单队列，拼接短信 todo 思考需要需要开启goroutine
+	remind.PubSubSms()
 	// 建立sms包，发送短信（按照腾讯云的样式）；然后接收Topic.Sms2Send，发送信息；
 	// 上面这步需要把splicePattern1里的假天气数据找地方写成真的
 	fmt.Println("here")

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"github.com/intel-go/fastjson"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"time"
@@ -264,7 +266,7 @@ func Get2XinZhiWhether(fakeData bool, cityPinYin string) (XinZhiWeatherDailyResu
 
 // todo 有路由的函数，做好路由handler函数和逻辑handler函数的解耦
 func CityWeatherDailyGet(cityPinYin string) (XinZhiWeatherDailyResults, error) {
-	res, err := Get2XinZhiWhether(true, cityPinYin)
+	res, err := Get2XinZhiWhether(config.GlobalConfig.Weather.FakeData, cityPinYin)
 	return res, err
 }
 
@@ -314,11 +316,16 @@ func UpdateWeatherDaily() {
 		// 获取城市天气信息
 		pinYin := cityList[i].PinYin  // "beijing"
 		println("pinYin", pinYin)
-		xinZhiWeather, err := Get2XinZhiWhether(true, pinYin)
+		xinZhiWeather, err := Get2XinZhiWhether(config.GlobalConfig.Weather.FakeData, pinYin)
 		if err != nil {
 			panic(err)
 		}
 		// todo 以日期做map
+		fmt.Println(xinZhiWeather)
+		if reflect.DeepEqual(xinZhiWeather, XinZhiWeatherDailyResults{}) {
+			log.Printf(pinYin + " has no data")
+			continue
+		}
 		dayWeatherMap := dayWeather2Map(xinZhiWeather)
 		fmt.Println("dayWeatherMap", dayWeatherMap[20200414])
 
@@ -363,7 +370,7 @@ func UpdateWeatherDaily() {
 			dayWeatherInstance := weather.DayWeather{}
 			toExecSql := dayWeatherInstance.PreReplaceMysql(dayWeather)  // todo 可以打开测试
 
-			fmt.Println("dayWeatherList", toExecSql)
+			log.Println("dayWeatherList", toExecSql)
 
 			_, err = common.Engine.Exec(toExecSql)  // 参考 https://www.geek-share.com/detail/2717393840.html
 			if err != nil {
