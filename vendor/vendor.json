@@ -149,6 +149,36 @@
 			"revisionTime": "2020-05-18T08:58:33Z"
 		},
 		{
+			"checksumSHA1": "VXvh5bXdIeKu5q1VW7EvAXeXZR0=",
+			"path": "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common",
+			"revision": "4a1ab426626efc5c1fff228adb842cdfb05556e4",
+			"revisionTime": "2020-06-29T01:31:18Z"
+		},
+		{
+			"checksumSHA1": "q+o6CYdmE6zUexIu50LJ8m5V9M8=",
+			"path": "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors",
+			"revision": "4a1ab426626efc5c1fff228adb842cdfb05556e4",
+			"revisionTime": "2020-06-29T01:31:18Z"
+		},
+		{
+			"checksumSHA1": "8llMnHnot2xwu8LI7BqWwRCXJwU=",
+			"path": "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/http",
+			"revision": "4a1ab426626efc5c1fff228adb842cdfb05556e4",
+			"revisionTime": "2020-06-29T01:31:18Z"
+		},
+		{
+			"checksumSHA1": "HG4hmYbxFgL/19qv1R0nddsqoG0=",
+			"path": "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile",
+			"revision": "4a1ab426626efc5c1fff228adb842cdfb05556e4",
+			"revisionTime": "2020-06-29T01:31:18Z"
+		},
+		{
+			"checksumSHA1": "IUemjeqlGwcyqUSMtlV6QFVKP9I=",
+			"path": "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20190711",
+			"revision": "4a1ab426626efc5c1fff228adb842cdfb05556e4",
+			"revisionTime": "2020-06-29T01:31:18Z"
+		},
+		{
 			"checksumSHA1": "JWmqQjxnUg8PRe1QfYCmzAcWDvM=",
 			"path": "github.com/ugorji/go/codec",
 			"revision": "42bc974514ff101a54c6b72a0e4dee29d96c0b26",

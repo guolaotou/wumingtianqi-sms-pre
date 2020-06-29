@@ -17,9 +17,9 @@ func TestUserToRemind(t *testing.T) {
 	defer session.Close()
 
 	// 1. 新建
-	subscribeId := 1
+	subscriberId := 1
 	utr := &user.UserToRemind{
-		SubscriberId:  subscribeId,
+		SubscriberId:  subscriberId,
 		SubscriberName: "路飞",
 		TelephoneNum:  "13800380038",
 	}
@@ -31,7 +31,7 @@ func TestUserToRemind(t *testing.T) {
 	// 2. 查询
 	t.Log("*** begin query session******")
 
-	utr2, has, err := user.QueryById(subscribeId)
+	utr2, has, err := user.QueryById(subscriberId)
 	if err != nil || !has {
 		t.Error("rc not found")
 	} else {

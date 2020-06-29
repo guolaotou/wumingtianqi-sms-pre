@@ -9,5 +9,12 @@
     "fake_data": true,
     "xin_zhi_weather_daily_url": "https://api.seniverse.com/v3/weather/daily.json?language=zh-Hans&unit=c&start=-1&days=5",
     "api_key": "xxx"
+  },
+  "sms": {
+    "secret_id": "xxx",
+    "secret_key": "xxx",
+    "sms_sdk_app_id": "xxx",
+    "sign": "xxx",
+    "test_phone": "+8613800380038"
   }
 }

@@ -9,9 +9,11 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"wumingtianqi-sms-pre/config"
 	"wumingtianqi-sms-pre/model/common"
 	orderModel "wumingtianqi-sms-pre/model/order"
 	"wumingtianqi-sms-pre/model/remind"
+	weatherModel "wumingtianqi-sms-pre/model/weather"
 	"wumingtianqi-sms-pre/utils"
 )
 
@@ -52,6 +54,32 @@ func FakeWeather() (Weather, Weather) {  // todo 之后把天气信息弄成真�
 	return yesterdayWeather, todayWeather
 }
 
+func Weather2Map(city string) (Weather, Weather) {
+	// 计算今日时间
+	yesterdayDate8Int := utils.GetSpecificDate8Int(0)  // todo 这个之后需要协调today和yestoday
+	yesterdayWeatherAll, _, _ := weatherModel.QueryByCityDate(city, yesterdayDate8Int)
+	yesterdayWeather := Weather{
+		city: WeatherItem{
+			"city": city,
+			"code_text": yesterdayWeatherAll.TextDay,  // todo 以后考虑把白天天气和晚上天气统一
+			"code_id": yesterdayWeatherAll.CodeDay,
+			"high": yesterdayWeatherAll.High,
+		},
+	}
+
+	todayDate8Int := utils.GetSpecificDate8Int(1)  // todo 这个之后需要协调today和yestoday
+	todayWeatherAll, _, _ := weatherModel.QueryByCityDate(city, todayDate8Int)
+	todayWeather := Weather{
+		city: WeatherItem{
+			"city": city,
+			"code_text": todayWeatherAll.TextDay,
+			"code_id": todayWeatherAll.CodeDay,
+			"high": todayWeatherAll.High,
+		},
+	}
+	return yesterdayWeather, todayWeather
+}
+
 type SplicePatternModel struct {
 	RemindSplicedText string `json:"remind_spliced_text"` // 拼接好的语句
 	Priority          int    `json:"priority"`
@@ -64,7 +92,13 @@ func splicePattern1(city string, remindPattern *remind.RemindPattern) SplicePatt
 	// 降雨对应的id todo 以后再弄个天气代码映射表？或者在某个地方弄个静态变量存
 	RainPatternIds := []int{10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
 
-	yesterdayWeather, todayWeather := FakeWeather()
+	var yesterdayWeather, todayWeather Weather
+	if config.GlobalConfig.Weather.FakeData {
+		yesterdayWeather, todayWeather = FakeWeather()
+	} else {
+		yesterdayWeather, todayWeather = Weather2Map(city)
+	}
+
 	codeText := todayWeather[city]["code_text"].(string)
 	codeYesterday := yesterdayWeather[city]["code_id"].(int)
 	codeToday := todayWeather[city]["code_id"].(int)
@@ -81,7 +115,12 @@ func splicePattern1(city string, remindPattern *remind.RemindPattern) SplicePatt
 
 func splicePattern2(city string, remindPattern *remind.RemindPattern, value int) SplicePatternModel {
 	// 2. 突然升温
-	yesterdayWeather, todayWeather := FakeWeather()
+	var yesterdayWeather, todayWeather Weather
+	if config.GlobalConfig.Weather.FakeData {
+		yesterdayWeather, todayWeather = FakeWeather()
+	} else {
+		yesterdayWeather, todayWeather = Weather2Map(city)
+	}
 	highYesterday := yesterdayWeather[city]["high"].(int)
 	highToday := todayWeather[city]["high"].(int)
 	highTodayStr := strconv.Itoa(todayWeather[city]["high"].(int))

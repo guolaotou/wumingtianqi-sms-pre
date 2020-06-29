@@ -30,8 +30,8 @@ func (m *UserToRemind) Delete() error {
 	return nil
 }
 
-func QueryById(subscribeId int)(*UserToRemind, bool, error) {
+func QueryById(subscriberId int)(*UserToRemind, bool, error) {
 	utr := new(UserToRemind)
-	has, err := common.Engine.Where("subscribe_id=?", subscribeId).Get(utr)
+	has, err := common.Engine.Where("subscriber_id=?", subscriberId).Get(utr)
 	return utr, has, err
 }
