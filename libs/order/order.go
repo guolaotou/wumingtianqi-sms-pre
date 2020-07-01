@@ -127,6 +127,8 @@ func splicePattern2(city string, remindPattern *remind.RemindPattern, value int)
 	valueStr := strconv.Itoa(value)
 
 	var pattern = new(SplicePatternModel)
+	log.Println("highToday - highYesterday", highToday - highYesterday)
+	log.Println("valuevalue", value)
 	if highToday - highYesterday >= value {  // 最高气温较前一日增加5度，升至25度，注意防范
 		remindObject := remindPattern.RemindObject
 		pattern.RemindSplicedText = remindObject + "较前一日增加" + valueStr + "度，升至" + highTodayStr + "度，注意防范"
@@ -230,14 +232,14 @@ func cronOrderFunc() {
 	// 得到当前的时间：精确到分钟，调用SpliceOrders
 	localDateStr := utils.GetLocalHourMin4Str()
 	log.Println("localDateStr", localDateStr)
-	SpliceOrders(localDateStr)
+	go SpliceOrders(localDateStr)
 }
 // func 每1分钟查看一次订单，将符合条件的放到队列里
 // pubsub参考: https://studygolang.com/articles/26894
 func CronOrder() {
 	c := utils.NewWithSeconds()
-	//_, err := c.AddFunc("0 */1 * * * *", cronOrderFunc)  // 1分钟一次，且是整点
-	_, err := c.AddFunc("*/2 * * * * *", cronOrderFunc)    // 为了测试，2秒钟1次
+	_, err := c.AddFunc("0 */1 * * * *", cronOrderFunc)  // 1分钟一次，且是整点
+	//_, err := c.AddFunc("*/2 * * * * *", cronOrderFunc)    // 为了测试，2秒钟1次; 测试完务必打开开关
 	if err != nil {
 		fmt.Println(err.Error())
 	}

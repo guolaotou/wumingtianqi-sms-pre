@@ -16,15 +16,15 @@ func TestSms(t *testing.T) {
 	smsConfig := config.GlobalConfig.Sms
 
 	// 秘钥填写
-	smsSdk := smsLib.SmsSdk{
+	smsSdk := smsLib.SmsSdkModel{
 		SecretId:    smsConfig.SecretId,
 		SecretKey:   smsConfig.SecretKey,
 		SmsSdkAppId: smsConfig.SmsSdkAppId,
 		Sign:        smsConfig.Sign,
 	}
 	//TemplateParamSet := []string{"海淀区", "这是2；", "这是3；", "这是4；", "这是5；", "这是6。"}
-	TemplateParamSet := []string{"海淀区", "22222", "33333", "44444", "5", "6"}
-	TemplateID := "634989"
+	TemplateParamSet := []string{"海淀区", "最高气温升高5度，注意防范；有雨，记得带伞！！"}
+	TemplateID := "650105"
 	PhoneNumberSet := smsConfig.TestPhone
 
 	smsSdk.SmsSdk(TemplateParamSet, TemplateID, PhoneNumberSet)

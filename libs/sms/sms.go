@@ -2,6 +2,7 @@ package sms
 import (
 	"encoding/json"
 	"fmt"
+	"wumingtianqi-sms-pre/config"
 
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
@@ -11,13 +12,13 @@ import (
 
 // go run libs/sms/sms.go
 // todo 做成一个函数
-type SmsSdk struct {
+type SmsSdkModel struct {
 	SecretId    string `json:"secret_id"`
 	SecretKey   string `json:"secret_key"`
 	SmsSdkAppId string `json:"sms_sdk_app_id"`
 	Sign string `json:"sign"`
 }
-func (smsSdk *SmsSdk)SmsSdk(TemplateParamSet []string, TemplateID string, PhoneNumberSet string) {
+func (smsSdk *SmsSdkModel)SmsSdk(TemplateParamSet []string, TemplateID string, PhoneNumberSet string) {
 	/* 必要步骤：
 	 * 实例化一个认证对象，入参需要传入腾讯云账户密钥对secretId，secretKey。
 	 * 这里采用的是从环境变量读取的方式，需要在环境变量中先设置这两个值。
@@ -100,4 +101,22 @@ func (smsSdk *SmsSdk)SmsSdk(TemplateParamSet []string, TemplateID string, PhoneN
 	b, _ := json.Marshal(response.Response)
 	// 打印返回的json字符串
 	fmt.Printf("%s", b)
+}
+
+func (smsSdk *SmsSdkModel)SendSms(city string, toSendContent string, phoneNum string) {
+	smsConfig := config.GlobalConfig.Sms
+	// 秘钥填写
+	smsSdkModel := SmsSdkModel{
+		SecretId:    smsConfig.SecretId,
+		SecretKey:   smsConfig.SecretKey,
+		SmsSdkAppId: smsConfig.SmsSdkAppId,
+		Sign:        smsConfig.Sign,
+	}
+
+	//TemplateParamSet := []string{city, "（不可退订）最高气温升高5度，注意防范；有雨，注意防范！！"}
+	TemplateParamSet := []string{city, toSendContent}
+	TemplateID := "650105"
+	PhoneNumberSet := phoneNum
+
+	smsSdkModel.SmsSdk(TemplateParamSet, TemplateID, PhoneNumberSet)
 }
