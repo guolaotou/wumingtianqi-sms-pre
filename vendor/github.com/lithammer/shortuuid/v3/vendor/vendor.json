@@ -1,0 +1,13 @@
+{
+	"comment": "",
+	"ignore": "",
+	"package": [
+		{
+			"checksumSHA1": "sTL4tsTghBJCTESIycWripyFxMY=",
+			"path": "github.com/google/uuid",
+			"revision": "cb32006e483f2a23230e24209cf185c65b477dbf",
+			"revisionTime": "2020-05-19T14:17:26Z"
+		}
+	],
+	"rootPath": "github.com/lithammer/shortuuid"
+}

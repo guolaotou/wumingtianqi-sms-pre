@@ -5,6 +5,7 @@ import (
 	"wumingtianqi-sms-pre/config"
 	"wumingtianqi-sms-pre/model"
 	"wumingtianqi-sms-pre/model/city"
+	//"github.com/lithammer/shortuuid/v3"
 )
 
 // go run main.go
@@ -20,6 +21,7 @@ func main() {
 	fmt.Println("cityModel", cityModel)
 
 	// 业务开始
+	//_ := shortuuid.New() // Cekw67uyMpBGZLRP2HFVbe
 
 	select {}
 }
