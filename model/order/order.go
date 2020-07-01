@@ -67,7 +67,7 @@ func (m * Order) QueryListByTime(time string) ([]Order, error) {
 
 func (m *OrderDetail) QueryListByOrderId(orderId int) ([]OrderDetail, error) {
 	modelList := make([]OrderDetail, 0)
-	err := common.Engine.Find(&modelList)
+	err := common.Engine.Where("order_id=?", orderId).Find(&modelList)
 	return modelList, err
 }
 

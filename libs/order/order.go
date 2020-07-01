@@ -124,7 +124,7 @@ func splicePattern2(city string, remindPattern *remind.RemindPattern, value int)
 	highYesterday := yesterdayWeather[city]["high"].(int)
 	highToday := todayWeather[city]["high"].(int)
 	highTodayStr := strconv.Itoa(todayWeather[city]["high"].(int))
-	valueStr := strconv.Itoa(value)
+	valueStr := strconv.Itoa(highToday - highYesterday)
 
 	var pattern = new(SplicePatternModel)
 	log.Println("highToday - highYesterday", highToday - highYesterday)
@@ -144,7 +144,6 @@ func SpliceOrders(time string) {
 	// 以上操作可以考虑分批开goroutine
 	order := orderModel.Order{}
 	orderModelList, err := order.QueryListByTime(time)
-	fmt.Println("orderModelList", orderModelList)
 	if err != nil {
 		panic(err)
 	}
