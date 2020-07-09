@@ -1,0 +1,6 @@
+main:
+  sqldb:
+    url: "www.baidu.com"
+    lala:
+      - 1
+      - 2

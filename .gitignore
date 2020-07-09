@@ -24,3 +24,7 @@ venv/
 wumingtianqi-sms-pre
 go.mod
 go.sum
+Pipfile
+Pipfile.lock
+城市列表.xls
+conf/python_config.yaml

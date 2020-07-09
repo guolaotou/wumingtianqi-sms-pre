@@ -137,6 +137,30 @@ func splicePattern2(city string, remindPattern *remind.RemindPattern, value int)
 	return *pattern
 }
 
+func splicePattern3(city string, remindPattern *remind.RemindPattern, value int) SplicePatternModel {
+	// 突然降温
+	var yesterdayWeather, todayWeather Weather
+	if config.GlobalConfig.Weather.FakeData {
+		yesterdayWeather, todayWeather = FakeWeather()
+	} else {
+		yesterdayWeather, todayWeather = Weather2Map(city)
+	}
+	highYesterday := yesterdayWeather[city]["high"].(int)
+	highToday := todayWeather[city]["high"].(int)
+	highTodayStr := strconv.Itoa(todayWeather[city]["high"].(int))
+	valueStr := strconv.Itoa(highToday - highYesterday)
+
+	var pattern = new(SplicePatternModel)
+	log.Println("highToday - highYesterday", highToday -highYesterday)
+	log.Println("valuevalue", value)
+	if highYesterday- highToday >= value {  // 最高气温较前一日降低5度，降到18度，注意防范
+		remindObject := remindPattern.RemindObject
+		pattern.RemindSplicedText = remindObject + "较前一日降低" + valueStr + "度，降至" + highTodayStr + "度，注意防范"
+		pattern.Priority = remindPattern.PriorityRemind
+	}
+	return *pattern
+}
+
 // func2 拼接某时刻的所有订单的信息，每个订单多个提醒模式
 func SpliceOrders(time string) {
 	// 查询所有order表中时间等于0900的model，for这些model，判断model下是否至少有2个提醒条件满足；
@@ -179,7 +203,10 @@ func SpliceOrders(time string) {
 					patterns = append(patterns, pattern2)
 				}
 			case 3: // 突然降温
-				println(2)
+				pattern3 := splicePattern3(city, remindPattern, value)
+				if pattern3.Priority >= 1 {  // 以后可以用标准一点的用法
+					patterns = append(patterns, pattern3)
+				}
 			case 4: // 空气质量变差
 				println(2)
 			case 5: // 9点突然升温
