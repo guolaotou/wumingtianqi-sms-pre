@@ -85,33 +85,59 @@ type SplicePatternModel struct {
 	Priority          int    `json:"priority"`
 }
 
+//
+//func splicePattern1(city string, remindPattern *remind.RemindPattern) SplicePatternModel{
+//	// 1. 突然降雨
+//	// 枚举"天气现象"表，整理突然降雨的触发条件 ![1,2,3] -> [1,2,3]，考虑remind_pattern里新增一个extension字段（json格式），这个字段不同业务不一样，需要的东西也不一样。
+//	// 降雨对应的id todo 以后再弄个天气代码映射表？或者在某个地方弄个静态变量存
+//	RainPatternIds := []int{10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+//
+//	var yesterdayWeather, todayWeather Weather
+//	if config.GlobalConfig.Weather.FakeData {
+//		yesterdayWeather, todayWeather = FakeWeather()
+//	} else {
+//		yesterdayWeather, todayWeather = Weather2Map(city)
+//	}
+//
+//	codeText := todayWeather[city]["code_text"].(string)
+//	codeYesterday := yesterdayWeather[city]["code_id"].(int)
+//	codeToday := todayWeather[city]["code_id"].(int)
+//	isYesRain, _ := utils.IsContain(codeYesterday, RainPatternIds)
+//	isTodayRain, _ := utils.IsContain(codeToday, RainPatternIds)
+//
+//	var pattern = new(SplicePatternModel)
+//	if !isYesRain && isTodayRain {
+//		pattern.RemindSplicedText = "有" + codeText + "记得带伞"  // 有阵雨 todo以后用format_text做通配，封装写法
+//		pattern.Priority = remindPattern.PriorityRemind
+//	}
+//	return *pattern
+//}
 
 func splicePattern1(city string, remindPattern *remind.RemindPattern) SplicePatternModel{
-	// 1. 突然降雨
-	// 枚举"天气现象"表，整理突然降雨的触发条件 ![1,2,3] -> [1,2,3]，考虑remind_pattern里新增一个extension字段（json格式），这个字段不同业务不一样，需要的东西也不一样。
+	// 1. 降水天气
+	// 枚举"天气现象"表，整理降水的所有情况 [1,2,3]，考虑remind_pattern里新增一个extension字段（json格式），这个字段不同业务不一样，需要的东西也不一样。
 	// 降雨对应的id todo 以后再弄个天气代码映射表？或者在某个地方弄个静态变量存
 	RainPatternIds := []int{10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
 
-	var yesterdayWeather, todayWeather Weather
+	var  todayWeather Weather
 	if config.GlobalConfig.Weather.FakeData {
-		yesterdayWeather, todayWeather = FakeWeather()
+		_, todayWeather = FakeWeather()
 	} else {
-		yesterdayWeather, todayWeather = Weather2Map(city)
+		_, todayWeather = Weather2Map(city)
 	}
 
 	codeText := todayWeather[city]["code_text"].(string)
-	codeYesterday := yesterdayWeather[city]["code_id"].(int)
 	codeToday := todayWeather[city]["code_id"].(int)
-	isYesRain, _ := utils.IsContain(codeYesterday, RainPatternIds)
 	isTodayRain, _ := utils.IsContain(codeToday, RainPatternIds)
 
 	var pattern = new(SplicePatternModel)
-	if !isYesRain && isTodayRain {
+	if isTodayRain {
 		pattern.RemindSplicedText = "有" + codeText + "记得带伞"  // 有阵雨 todo以后用format_text做通配，封装写法
 		pattern.Priority = remindPattern.PriorityRemind
 	}
 	return *pattern
 }
+
 
 func splicePattern2(city string, remindPattern *remind.RemindPattern, value int) SplicePatternModel {
 	// 2. 突然升温
@@ -138,7 +164,7 @@ func splicePattern2(city string, remindPattern *remind.RemindPattern, value int)
 }
 
 func splicePattern3(city string, remindPattern *remind.RemindPattern, value int) SplicePatternModel {
-	// 突然降温
+	// 3. 突然降温
 	var yesterdayWeather, todayWeather Weather
 	if config.GlobalConfig.Weather.FakeData {
 		yesterdayWeather, todayWeather = FakeWeather()
@@ -156,6 +182,34 @@ func splicePattern3(city string, remindPattern *remind.RemindPattern, value int)
 	if highYesterday- highToday >= value {  // 最高气温较前一日降低5度，降到18度，注意防范
 		remindObject := remindPattern.RemindObject
 		pattern.RemindSplicedText = remindObject + "较前一日降低" + valueStr + "度，降至" + highTodayStr + "度，注意防范"
+		pattern.Priority = remindPattern.PriorityRemind
+	}
+	return *pattern
+}
+
+
+func splicePattern8(city string, remindPattern *remind.RemindPattern) SplicePatternModel{
+	// 8. 雨过天晴
+	// 枚举"天气现象"表，整理突然降雨的触发条件 ![1,2,3] -> [1,2,3]，考虑remind_pattern里新增一个extension字段（json格式），这个字段不同业务不一样，需要的东西也不一样。
+	// 降雨对应的id todo 以后再弄个天气代码映射表？或者在某个地方弄个静态变量存
+	RainPatternIds := []int{10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+
+	var yesterdayWeather, todayWeather Weather
+	if config.GlobalConfig.Weather.FakeData {
+		yesterdayWeather, todayWeather = FakeWeather()
+	} else {
+		yesterdayWeather, todayWeather = Weather2Map(city)
+	}
+
+	codeText := todayWeather[city]["code_text"].(string)
+	codeYesterday := yesterdayWeather[city]["code_id"].(int)
+	codeToday := todayWeather[city]["code_id"].(int)
+	isYesRain, _ := utils.IsContain(codeYesterday, RainPatternIds)
+	isTodayRain, _ := utils.IsContain(codeToday, RainPatternIds)
+
+	var pattern = new(SplicePatternModel)
+	if isYesRain && !isTodayRain {
+		pattern.RemindSplicedText = "没有降水啦！明天天气：" + codeText // 雨过天晴
 		pattern.Priority = remindPattern.PriorityRemind
 	}
 	return *pattern
@@ -215,6 +269,11 @@ func SpliceOrders(time string) {
 				println(2)
 			case 7: // 低温预警
 				println(2)
+			case 8: // 雨过天晴
+				pattern8 := splicePattern8(city, remindPattern)
+				if pattern8.Priority >= 1 {  // 以后可以用标准一点的用法
+					patterns = append(patterns, pattern8)
+				}
 			}
 		}
 		sort.Slice(patterns, func(i, j int) bool {  // list内包含字典排序，参考https://stackoverflow.com/questions/28999735/what-is-the-shortest-way-to-simply-sort-an-array-of-structs-by-arbitrary-field
@@ -241,6 +300,7 @@ func SpliceOrders(time string) {
 				log.Println(err.Error())
 				panic(err)
 			}
+			fmt.Println(needToRemindOrder)
 			msg := message.NewMessage(watermill.NewUUID(), needToRemindOrderJson)  // 封装用户信息和带拼接的短信
 			if err := common.PubSub.Publish("Topic.needToRemindOrder", msg); err != nil {
 				panic(err)

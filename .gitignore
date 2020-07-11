@@ -28,3 +28,4 @@ Pipfile
 Pipfile.lock
 城市列表.xls
 conf/python_config.yaml
+*.out
