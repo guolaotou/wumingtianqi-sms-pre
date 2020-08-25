@@ -16,5 +16,9 @@
     "sms_sdk_app_id": "xxx",
     "sign": "xxx",
     "test_phone": "+8613800380038"
+  },
+  "wx": {
+    "app_id": "xxx",
+    "secret": "xxx"
   }
 }

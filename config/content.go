@@ -5,6 +5,7 @@ type Config struct {
 	Log        Log     `json:"log"`
 	Weather    Weather `json:"weather"`
 	Sms        Sms     `json:"sms"`
+	Wx         Wx      `json:"wx"`
 	Debug      bool    `json:"-"`
 	ConfigFile string  `json:"-"`
 }
@@ -29,6 +30,11 @@ type Sms struct {
 	SmsSdkAppId string `json:"sms_sdk_app_id"`
 	Sign        string `json:"sign"`
 	TestPhone   string `json:"test_phone"`
+}
+
+type Wx struct {
+	AppId string `json:"app_id"`
+	Secret string `json:"secret"`
 }
 
 var GlobalConfig *Config
