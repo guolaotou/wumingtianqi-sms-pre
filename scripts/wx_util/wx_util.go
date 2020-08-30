@@ -7,9 +7,9 @@ import (
 	"wumingtianqi-sms-pre/config"
 )
 
-func getUserOpenId(jsCode string) string {
+func getUserOpenId(wechatCode string) string {
 	/*  获取用户open_id
-	jsCode: 小程序端调用wx.login获取的用户临时登录凭证code; todo golang标准注释学一下
+	wechatCode: 小程序端调用wx.login获取的用户临时登录凭证code; todo golang标准注释学一下
 	参考文档：// https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/login/auth.code2Session.html
 	 */
 	if _, err := config.LoadConfig(); err != nil {
@@ -20,7 +20,7 @@ func getUserOpenId(jsCode string) string {
 	appId := wxConfig.AppId
 	secret := wxConfig.Secret
 	grantType := "authorization_code"
-	url := fmt.Sprintf("%s?appId=%s&secret=%s&grant_type=%s&js_code=%s", baseUrl, appId, secret, grantType, jsCode)
+	url := fmt.Sprintf("%s?appId=%s&secret=%s&grant_type=%s&js_code=%s", baseUrl, appId, secret, grantType, wechatCode)
 
 	resp, err := http.Get(url)
 	if err != nil {

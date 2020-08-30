@@ -2,6 +2,10 @@
   "main": {
     "mysql": "userxxx:pwdxxx@(localhostxxx:3306)/wumingtianqi"
   },
+  "web": {
+    "host": "0.0.0.0",
+    "port": "8001"
+  },
   "log": {
     "app_file": "app33.log"
   },

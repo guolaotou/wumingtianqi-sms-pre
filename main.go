@@ -5,6 +5,8 @@ import (
 	"wumingtianqi-sms-pre/config"
 	"wumingtianqi-sms-pre/model"
 	"wumingtianqi-sms-pre/model/city"
+	"wumingtianqi-sms-pre/web"
+
 	//"github.com/lithammer/shortuuid/v3"
 )
 
@@ -21,6 +23,7 @@ func main() {
 	fmt.Println("cityModel", cityModel)
 
 	// 业务开始
+	web.ListenHttp()
 	//_ := shortuuid.New() // Cekw67uyMpBGZLRP2HFVbe
 
 	select {}

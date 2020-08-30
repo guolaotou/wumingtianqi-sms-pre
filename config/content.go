@@ -2,6 +2,7 @@ package config
 
 type Config struct {
 	Main       Main    `json:"main"`
+	Web        Web     `json:"web"`
 	Log        Log     `json:"log"`
 	Weather    Weather `json:"weather"`
 	Sms        Sms     `json:"sms"`
@@ -12,6 +13,11 @@ type Config struct {
 
 type Main struct {
 	Mysql string `json:"mysql"`
+}
+
+type Web struct {
+	Host string `json:"host"`
+	Port string `json:"port"`
 }
 
 type Log struct {
