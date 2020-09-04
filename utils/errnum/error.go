@@ -8,7 +8,9 @@ var (
 	InternalServerError = &Er{Code: 40001, Message: "Internal server error"}
 	ParamsError         = &Er{Code: 40002, Message: "Params error"}
 	DbError             = &Er{Code: 40003, Message: "Db error"}
-	S2SError            = &Er{Code: 40004, Message: "Db error"}
+	S2SError            = &Er{Code: 40004, Message: "S2S error"}
+	WxError             = &Er{Code: 40005, Message: "Wx error"}
+	StrangeError        = &Er{Code: 40006, Message: "Strange error"}
 
 	// Continue add err types ...
 )

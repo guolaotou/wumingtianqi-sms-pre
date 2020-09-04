@@ -2,6 +2,7 @@ package user
 
 import (
 	"testing"
+	"time"
 	"wumingtianqi-sms-pre/model/common"
 	test "wumingtianqi-sms-pre/testing"
 	"wumingtianqi-sms-pre/model/user"
@@ -48,4 +49,39 @@ func TestUserToRemind(t *testing.T) {
 	t.Log("*** begin delete session****** ")
 	//_ = utr.Delete()
 	t.Log("*** begin delete session****** ")
+}
+
+func TestUserInfo(t *testing.T) {
+	test.Setup()
+	session := common.Engine.NewSession()
+	defer session.Close()
+
+	// 1. 新建
+	id := 1
+	currentTime := time.Now()
+	m := &user.UserInfo{
+		Id:         id,
+		WxOpenId:   "open_id111",
+		WxUnionId:  "union_id111",
+		CreateTime: currentTime,
+		UpdateTime: currentTime,
+	}
+	t.Log("*** begin create session******")
+	if err := m.Create(); err != nil {
+		panic(err)
+	}
+
+	// 2. 查询
+	t.Log("*** begin query session******")
+	m = new(user.UserInfo)
+	m, has, err := m.QueryById(id)
+	if err != nil || !has {
+		t.Error("model not found")
+	} else {
+		t.Log("model: ", m)
+	}
+	t.Log("*** end query session****** ")
+
+	// 3. 更改
+	// 4. 删除
 }
