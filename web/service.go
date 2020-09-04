@@ -2,7 +2,6 @@ package web
 
 import (
 	"github.com/gin-gonic/gin"
-	"nevermore/log"
 	"wumingtianqi-sms-pre/config"
 	"wumingtianqi-sms-pre/router"
 )
@@ -15,12 +14,12 @@ func ListenHttp() {
 
 	app := gin.Default()
 	router.InitRouter(app)  // 路由设置
-	log.L().Info("WEb server started")
+	//log.L().Info("WEb server started")
 
 	//host := config.GlobalConfig.Web.Host
 	port := config.GlobalConfig.Web.Port
 	err := app.Run(":" + port)
 	if err != nil {
-		log.L().Error("Failed to start web server")
+		//log.L().Error("Failed to start web server")
 	}
 }

@@ -75,10 +75,6 @@
 			"revisionTime": "2020-05-25T13:47:06Z"
 		},
 		{
-			"path": "github.com/go-playground/validator/v10",
-			"revision": ""
-		},
-		{
 			"checksumSHA1": "DjIB4Erdu6l/CAHWkF5pEiTJ8ic=",
 			"path": "github.com/go-sql-driver/mysql",
 			"revision": "681ffa848bae8d0d7b1a452963c0705b132308f7",
@@ -107,10 +103,6 @@
 			"path": "github.com/json-iterator/go",
 			"revision": "55287ed53a0aca60fb6556a660240938befdf1ef",
 			"revisionTime": "2020-05-08T07:08:25Z"
-		},
-		{
-			"path": "github.com/lithammer/shortuuid/v3",
-			"revision": ""
 		},
 		{
 			"checksumSHA1": "CQ794EIFp/4zTVi4redzOXOPY8k=",

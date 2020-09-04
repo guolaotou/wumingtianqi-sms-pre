@@ -2,7 +2,7 @@ package wx
 
 import (
 	"github.com/gin-gonic/gin"
-	"nevermore/log"
+	//"nevermore/log"
 	"wumingtianqi-sms-pre/handler"
 	"wumingtianqi-sms-pre/libs/wx"
 	"wumingtianqi-sms-pre/utils/errnum"
@@ -22,7 +22,7 @@ func WxLogin (context *gin.Context){
 	}
 	userId, err := wx.WxLogin(wechatCode)  // lib函数
 	if err != nil {
-		log.L().Error(err.Error())  // todo 以后再封装log模块
+		//log.L().Error(err.Error())  // todo 以后再封装log模块
 		handler.SendResponse(context, err, nil)
 	}
 
