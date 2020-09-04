@@ -75,6 +75,12 @@
 			"revisionTime": "2020-05-25T13:47:06Z"
 		},
 		{
+			"checksumSHA1": "6ALSgCnAKfLZSShw/eDpMQzHcXo=",
+			"path": "github.com/go-playground/validator",
+			"revision": "ea924ce89a4774b8017143b34b946db46add9df1",
+			"revisionTime": "2020-05-21T06:13:22Z"
+		},
+		{
 			"checksumSHA1": "DjIB4Erdu6l/CAHWkF5pEiTJ8ic=",
 			"path": "github.com/go-sql-driver/mysql",
 			"revision": "681ffa848bae8d0d7b1a452963c0705b132308f7",
@@ -103,6 +109,12 @@
 			"path": "github.com/json-iterator/go",
 			"revision": "55287ed53a0aca60fb6556a660240938befdf1ef",
 			"revisionTime": "2020-05-08T07:08:25Z"
+		},
+		{
+			"checksumSHA1": "IyE188Enf3kzc8ivCKMy/yk+xJw=",
+			"path": "github.com/lithammer/shortuuid",
+			"revision": "e21caa6bb27f68a0bf02ead51abfb26c74bc3b9c",
+			"revisionTime": "2020-04-14T19:53:24Z"
 		},
 		{
 			"checksumSHA1": "CQ794EIFp/4zTVi4redzOXOPY8k=",
