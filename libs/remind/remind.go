@@ -9,10 +9,10 @@ import (
 	"log"
 	"strconv"
 	"time"
-	"wumingtianqi-sms-pre/libs/sms"
-	"wumingtianqi-sms-pre/model/city"
-	"wumingtianqi-sms-pre/model/common"
-	"wumingtianqi-sms-pre/model/user"
+	"wumingtianqi/libs/sms"
+	"wumingtianqi/model/city"
+	"wumingtianqi/model/common"
+	"wumingtianqi/model/user"
 )
 
 // 读取需要提醒的订单队列，拼接短信

@@ -2,7 +2,7 @@ package order
 
 import (
 	_ "github.com/go-sql-driver/mysql"
-	"wumingtianqi-sms-pre/model/common"
+	"wumingtianqi/model/common"
 )
 
 

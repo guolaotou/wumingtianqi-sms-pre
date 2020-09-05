@@ -21,7 +21,7 @@ conf/config.json
 .DS_Store
 .idea/
 venv/
-wumingtianqi-sms-pre
+wumingtianqi
 go.mod
 go.sum
 Pipfile

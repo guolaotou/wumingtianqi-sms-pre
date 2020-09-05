@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"wumingtianqi-sms-pre/config"
-	"wumingtianqi-sms-pre/model/user"
-	"wumingtianqi-sms-pre/utils/errnum"
+	"wumingtianqi/config"
+	"wumingtianqi/model/user"
+	"wumingtianqi/utils/errnum"
 )
 
 func WxLogin(wechatCode string) (int, error) {

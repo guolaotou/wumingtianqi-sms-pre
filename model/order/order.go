@@ -1,7 +1,7 @@
 package order
 
 import (
-	"wumingtianqi-sms-pre/model/common"
+	"wumingtianqi/model/common"
 )
 
 // 用户订阅表

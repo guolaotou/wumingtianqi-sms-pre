@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"sync"
 	"time"
-	"wumingtianqi-sms-pre/config"
-	"wumingtianqi-sms-pre/handler/sms_pre"
-	"wumingtianqi-sms-pre/model"
-	"wumingtianqi-sms-pre/model/city"
-	. "wumingtianqi-sms-pre/model/order"
-	"wumingtianqi-sms-pre/testing"
-	"wumingtianqi-sms-pre/utils"
+	"wumingtianqi/config"
+	"wumingtianqi/handler/sms_pre"
+	"wumingtianqi/model"
+	"wumingtianqi/model/city"
+	. "wumingtianqi/model/order"
+	"wumingtianqi/testing"
+	"wumingtianqi/utils"
 )
 
 // 存下最初实现的生产者消费者模式，当时写到main.go里的

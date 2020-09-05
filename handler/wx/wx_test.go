@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"wumingtianqi-sms-pre/config"
-	test "wumingtianqi-sms-pre/testing"
+	"wumingtianqi/config"
+	test "wumingtianqi/testing"
 	"testing"
 )
 

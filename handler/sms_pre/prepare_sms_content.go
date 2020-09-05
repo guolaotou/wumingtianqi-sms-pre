@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"runtime"
 	"time"
-	. "wumingtianqi-sms-pre/model/order"
+	. "wumingtianqi/model/order"
 )
 
 // 消费者&生产者: 循环取Q2(queue2)，制作短信内容，然后放到Q3； 这个是一个一直执行的线程

@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"wumingtianqi-sms-pre/utils/errnum"
+	"wumingtianqi/utils/errnum"
 )
 
 type Response struct {

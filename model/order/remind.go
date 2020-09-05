@@ -1,6 +1,6 @@
 package order
 
-import "wumingtianqi-sms-pre/model/common"
+import "wumingtianqi/model/common"
 
 // 提醒对象对照表
 type RemindObject struct {

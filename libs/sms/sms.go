@@ -2,7 +2,7 @@ package sms
 import (
 	"encoding/json"
 	"fmt"
-	"wumingtianqi-sms-pre/config"
+	"wumingtianqi/config"
 
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"

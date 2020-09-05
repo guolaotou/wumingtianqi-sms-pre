@@ -2,8 +2,8 @@ package testing
 
 import (
 	"fmt"
-	"wumingtianqi-sms-pre/config"
-	"wumingtianqi-sms-pre/model"
+	"wumingtianqi/config"
+	"wumingtianqi/model"
 )
 
 func Setup() {

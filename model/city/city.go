@@ -1,7 +1,7 @@
 package city
 
 import (
-	"wumingtianqi-sms-pre/model/common"
+	"wumingtianqi/model/common"
 )
 
 type City struct {

@@ -2,7 +2,7 @@ package user
 
 import (
 	"time"
-	"wumingtianqi-sms-pre/model/common"
+	"wumingtianqi/model/common"
 )
 
 // 被提醒用户表

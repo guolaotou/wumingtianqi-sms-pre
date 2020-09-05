@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
-	. "wumingtianqi-sms-pre/model/order"
-	"wumingtianqi-sms-pre/utils"
+	. "wumingtianqi/model/order"
+	"wumingtianqi/utils"
 )
 
 // 造数据，存入Q1

@@ -9,12 +9,12 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"wumingtianqi-sms-pre/config"
-	"wumingtianqi-sms-pre/model/common"
-	orderModel "wumingtianqi-sms-pre/model/order"
-	"wumingtianqi-sms-pre/model/remind"
-	weatherModel "wumingtianqi-sms-pre/model/weather"
-	"wumingtianqi-sms-pre/utils"
+	"wumingtianqi/config"
+	"wumingtianqi/model/common"
+	orderModel "wumingtianqi/model/order"
+	"wumingtianqi/model/remind"
+	weatherModel "wumingtianqi/model/weather"
+	"wumingtianqi/utils"
 )
 
 // todo 用户建立订单
