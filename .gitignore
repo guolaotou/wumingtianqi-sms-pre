@@ -22,8 +22,6 @@ conf/config.json
 .idea/
 venv/
 wumingtianqi
-go.mod
-go.sum
 Pipfile
 Pipfile.lock
 城市列表.xls
