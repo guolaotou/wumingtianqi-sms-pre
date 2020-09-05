@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"wumingtianqi-sms-pre/config"
+	"wumingtianqi/config"
 )
 
 func getUserOpenId(wechatCode string) string {

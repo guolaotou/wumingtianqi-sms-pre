@@ -25,8 +25,8 @@ def deploy_weather_cron():
 
     print("1. Generate binary file------")
     file = "wumingtianqi-weather.out"
-    # cmd = "go build -o {} -v wumingtianqi-sms-pre/cron/weather".format(file)  # mac下编译；如果直接在linux跑，会报错 cannot execute binary file: Exec format error
-    cmd = "env GOOS=linux GOARCH=amd64 go build -o {} -v wumingtianqi-sms-pre/cron/weather".format(file)  # golang编译需要分mac和linux https://stackoverflow.com/questions/36198418/golang-cannot-execute-binary-file-exec-format-error
+    # cmd = "go build -o {} -v wumingtianqi/cron/weather".format(file)  # mac下编译；如果直接在linux跑，会报错 cannot execute binary file: Exec format error
+    cmd = "env GOOS=linux GOARCH=amd64 go build -o {} -v wumingtianqi/cron/weather".format(file)  # golang编译需要分mac和linux https://stackoverflow.com/questions/36198418/golang-cannot-execute-binary-file-exec-format-error
     print(cmd)
     call(cmd, shell=True)
     time.sleep(4)
@@ -69,8 +69,8 @@ def deploy_order_cron():
 
     print("1. Generate binary file------")
     file = "wumingtianqi-order.out"
-    # cmd = "go build -o {} -v wumingtianqi-sms-pre/cron/order".format(file)  # mac下编译；如果直接在linux跑，会报错 cannot execute binary file: Exec format error
-    cmd = "env GOOS=linux GOARCH=amd64 go build -o {} -v wumingtianqi-sms-pre/cron/order".format(file)  # golang编译需要分mac和linux https://stackoverflow.com/questions/36198418/golang-cannot-execute-binary-file-exec-format-error
+    # cmd = "go build -o {} -v wumingtianqi/cron/order".format(file)  # mac下编译；如果直接在linux跑，会报错 cannot execute binary file: Exec format error
+    cmd = "env GOOS=linux GOARCH=amd64 go build -o {} -v wumingtianqi/cron/order".format(file)  # golang编译需要分mac和linux https://stackoverflow.com/questions/36198418/golang-cannot-execute-binary-file-exec-format-error
     print(cmd)
     call(cmd, shell=True)
     time.sleep(4)

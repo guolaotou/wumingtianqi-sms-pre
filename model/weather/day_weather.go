@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"wumingtianqi-sms-pre/model/common"
+	"wumingtianqi/model/common"
 	"xorm.io/core"
 )
 

@@ -3,9 +3,9 @@ package wx
 import (
 	"github.com/gin-gonic/gin"
 	//"nevermore/log"
-	"wumingtianqi-sms-pre/handler"
-	"wumingtianqi-sms-pre/libs/wx"
-	"wumingtianqi-sms-pre/utils/errnum"
+	"wumingtianqi/handler"
+	"wumingtianqi/libs/wx"
+	"wumingtianqi/utils/errnum"
 )
 
 // API：用户微信登录

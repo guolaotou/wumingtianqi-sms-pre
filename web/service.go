@@ -2,8 +2,8 @@ package web
 
 import (
 	"github.com/gin-gonic/gin"
-	"wumingtianqi-sms-pre/config"
-	"wumingtianqi-sms-pre/router"
+	"wumingtianqi/config"
+	"wumingtianqi/router"
 )
 
 func ListenHttp() {

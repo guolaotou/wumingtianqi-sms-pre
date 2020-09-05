@@ -6,10 +6,10 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"log"
 	"time"
-	"wumingtianqi-sms-pre/config"
-	"wumingtianqi-sms-pre/libs/order"
-	"wumingtianqi-sms-pre/libs/remind"
-	"wumingtianqi-sms-pre/model"
+	"wumingtianqi/config"
+	"wumingtianqi/libs/order"
+	"wumingtianqi/libs/remind"
+	"wumingtianqi/model"
 )
 
 // 这个模块先用来测试pubsub

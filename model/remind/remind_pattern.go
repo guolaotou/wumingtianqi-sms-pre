@@ -1,6 +1,6 @@
 package remind
 
-import "wumingtianqi-sms-pre/model/common"
+import "wumingtianqi/model/common"
 
 // todo 提醒模式表
 // todo order表（原user_subscribe_content改一下）

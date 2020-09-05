@@ -2,7 +2,7 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"wumingtianqi-sms-pre/handler/wx"
+	"wumingtianqi/handler/wx"
 )
 
 

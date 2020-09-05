@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"wumingtianqi-sms-pre/config"
-	"wumingtianqi-sms-pre/model/city"
-	"wumingtianqi-sms-pre/model/common"
-	"wumingtianqi-sms-pre/model/weather"
-	"wumingtianqi-sms-pre/utils"
+	"wumingtianqi/config"
+	"wumingtianqi/model/city"
+	"wumingtianqi/model/common"
+	"wumingtianqi/model/weather"
+	"wumingtianqi/utils"
 )
 
 // 根据指定城市，获取新知天气信息

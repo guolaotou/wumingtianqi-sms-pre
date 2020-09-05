@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"wumingtianqi-sms-pre/config"
-	"wumingtianqi-sms-pre/model"
-	"wumingtianqi-sms-pre/model/city"
-	"wumingtianqi-sms-pre/web"
+	"wumingtianqi/config"
+	"wumingtianqi/model"
+	"wumingtianqi/model/city"
+	"wumingtianqi/web"
 
 	//"github.com/lithammer/shortuuid/v3"
 )

@@ -2,7 +2,7 @@ package sms_pre
 
 import (
 	"time"
-	"wumingtianqi-sms-pre/utils"
+	"wumingtianqi/utils"
 )
 
 // 消费者：循环取Q3，发送短信，同时控制每秒能够发送的数量

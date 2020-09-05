@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"wumingtianqi-sms-pre/config"
-	"wumingtianqi-sms-pre/libs/weather"
-	"wumingtianqi-sms-pre/model"
+	"wumingtianqi/config"
+	"wumingtianqi/libs/weather"
+	"wumingtianqi/model"
 )
 
 // 运行方法1：
-//  mac build: /usr/local/go/bin/go build -o ~/go/src/wumingtianqi-weather.out -v wumingtianqi-sms-pre/cron/weather
+//  mac build: /usr/local/go/bin/go build -o ~/go/src/wumingtianqi-weather.out -v wumingtianqi/cron/weather
 //  mac run: ~/go/src/wumingtianqi-weather.out
 // 运行方法2：
 // go run cron/weather/main.go
