@@ -2,7 +2,7 @@ package utils
 
 import (
 	"errors"
-	"github.com/robfig/cron"
+	//"github.com/robfig/cron"
 	"reflect"
 	"strconv"
 	"time"
@@ -55,8 +55,8 @@ func IsContain(obj interface{}, target interface{}) (bool, error) {
 	return false, errors.New("obj is not in target")
 }
 
-func NewWithSeconds() *cron.Cron {
-	secondParser := cron.NewParser(cron.Second | cron.Minute |
-		cron.Hour | cron.Dom | cron.Month | cron.DowOptional | cron.Descriptor)
-	return cron.New(cron.WithParser(secondParser), cron.WithChain())
-}
+//func NewWithSeconds() *cron.Cron {
+//	secondParser := cron.NewParser(cron.Second | cron.Minute |
+//		cron.Hour | cron.Dom | cron.Month | cron.DowOptional | cron.Descriptor)
+//	return cron.New( cron.WithParser(secondParser), cron.WithChain())
+//}

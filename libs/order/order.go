@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/robfig/cron"
 	"log"
 	"sort"
 	"strconv"
@@ -323,8 +324,9 @@ func cronOrderFunc() {
 // func 每1分钟查看一次订单，将符合条件的放到队列里
 // pubsub参考: https://studygolang.com/articles/26894
 func CronOrder() {
-	c := utils.NewWithSeconds()
-	_, err := c.AddFunc("0 */1 * * * *", cronOrderFunc)  // 1分钟一次，且是整点
+	//c := utils.NewWithSeconds()  # 以前的用法
+	c := cron.New()
+	err := c.AddFunc("0 */1 * * * *", cronOrderFunc)  // 1分钟一次，且是整点
 	//_, err := c.AddFunc("*/2 * * * * *", cronOrderFunc)    // 为了测试，2秒钟1次; 测试完务必打开开关
 	if err != nil {
 		fmt.Println(err.Error())

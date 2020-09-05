@@ -32,17 +32,18 @@ func dingshirenwu1() {
 	//}
 }
 
-// 返回一个支持至 秒 级别的 cron
-func newWithSeconds() *cron.Cron {
-	secondParser := cron.NewParser(cron.Second | cron.Minute |
-		cron.Hour | cron.Dom | cron.Month | cron.DowOptional | cron.Descriptor)
-	return cron.New(cron.WithParser(secondParser), cron.WithChain())
-}
+//// 返回一个支持至 秒 级别的 cron
+//func newWithSeconds() *cron.Cron {
+//	secondParser := cron.NewParser(cron.Second | cron.Minute |
+//		cron.Hour | cron.Dom | cron.Month | cron.DowOptional | cron.Descriptor)
+//	return cron.New(cron.WithParser(secondParser), cron.WithChain())
+//}
 
 func dingshirenwu2() {
 	fmt.Println("duandian2")
-	c := newWithSeconds()
-	_, err := c.AddFunc("*/2 * * * * *", f)
+	//c := newWithSeconds()
+	c := cron.New()
+	err := c.AddFunc("*/2 * * * * *", f)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -52,6 +53,11 @@ func dingshirenwu2() {
 	select {}
 }
 
+// 运行方法1：
+//  mac build: /usr/local/go/bin/go build -o ~/go/src/wumingtianqi-remind.out -v wumingtianqi/cron/remind
+//  mac run: ~/go/src/wumingtianqi-remind.out
+// 运行方法2：
+// go run cron/remind/main.go
 func main() {  // 定时任务参考 https://www.bookstack.cn/read/topgoer/58c7a1319bdc2491.md
 	go dingshirenwu1() // 调用天气抓取，存取天气信息；更新天气信息；第一步完成北京的
 	go dingshirenwu2() // 调用 order，then拼接remind信息
