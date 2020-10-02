@@ -10,6 +10,7 @@ require (
 	github.com/intel-go/fastjson v0.0.0-20170329170629-f846ae58a1ab
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/robfig/cron v1.2.0
+	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go v3.0.233+incompatible
 	xorm.io/core v0.7.3
 )

@@ -18,7 +18,7 @@ func TestUserToRemind(t *testing.T) {
 	defer session.Close()
 
 	// 1. 新建
-	subscriberId := 1
+	subscriberId := 3
 	utr := &user.UserToRemind{
 		SubscriberId:  subscriberId,
 		SubscriberName: "路飞",
@@ -47,7 +47,7 @@ func TestUserToRemind(t *testing.T) {
 
 	// 4. 删除
 	t.Log("*** begin delete session****** ")
-	//_ = utr.Delete()
+	_ = utr.Delete()
 	t.Log("*** begin delete session****** ")
 }
 
@@ -57,7 +57,7 @@ func TestUserInfo(t *testing.T) {
 	defer session.Close()
 
 	// 1. 新建
-	id := 1
+	id := 4
 	currentTime := time.Now()
 	m := &user.UserInfo{
 		Id:         id,
@@ -73,15 +73,72 @@ func TestUserInfo(t *testing.T) {
 
 	// 2. 查询
 	t.Log("*** begin query session******")
-	m = new(user.UserInfo)
-	m, has, err := m.QueryById(id)
+	//m2 := new(user.UserInfo)
+	m2, has, err := m.QueryById(id)
 	if err != nil || !has {
 		t.Error("model not found")
 	} else {
-		t.Log("model: ", m)
+		t.Log("model: ", m2)
 	}
 	t.Log("*** end query session****** ")
 
 	// 3. 更改
 	// 4. 删除
+	_ = m.Delete()
+}
+
+/*
+type Invitation struct {
+	Id             int       `json:"id" xorm:"pk autoincr INT(11)"`
+	InvitationCode string    `json:"invitation_code" xorm:"VARCHAR(100) unique index"`
+	TimesMax       int       `json:"times_max" xorm:"INT(11)"`
+	TimesRemaining int       `json:"times_remaining" xorm:"INT(11)"`
+	Vip            int       `json:"vip" xorm:"INT(11)"`
+	Duration       int       `json:"duration" xorm:"INT(11) default 0"`
+	Coin           int       `json:"coin" xorm:"INT(20) default 0"`
+	Diamond        int       `json:"diamond" xorm:"INT(11) default 0"`
+	Creator        int       `json:"diamond" xorm:"INT(11) default -1"`
+	CreateTime     time.Time `json:"create_time" xorm:"TIMESTAMP"`
+	UpdateTime     time.Time `json:"update_time" xorm:"TIMESTAMP"`
+}
+ */
+func TestInvitation(t *testing.T) {
+	test.Setup()
+	session := common.Engine.NewSession()
+	defer session.Close()
+
+	// 1.新建
+	id := 100
+	currentTime := time.Now()
+	m := &user.Invitation{
+		Id:             id,
+		InvitationCode: "xx11tyuk",
+		TimesMax:       10,
+		TimesRemaining: 10,
+		Vip:            1,
+		Duration:       100,
+		Coin:           10000,
+		Diamond:        10000,
+		Creator:        -1,
+		CreateTime:     currentTime,
+		UpdateTime:     currentTime,
+	}
+
+	t.Log("*** begin create session******")
+	if err := m.Create(); err != nil {
+		panic(err)
+	}
+	// 2. 查询
+	t.Log("*** begin query session******")
+	m2, has, err := m.QueryById(id)
+	if err != nil || !has {
+		t.Error("model not found")
+	} else {
+		t.Log("model", m2)
+	}
+	t.Log("*** end query session****** ")
+
+	// 3. 更改
+	// 4. 删除
+	_ = m.Delete()
 }
