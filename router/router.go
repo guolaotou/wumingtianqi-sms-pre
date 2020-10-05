@@ -2,7 +2,9 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"wumingtianqi/handler/user"
 	"wumingtianqi/handler/wx"
+	"wumingtianqi/router/middleware"
 )
 
 
@@ -11,4 +13,6 @@ func InitRouter(router *gin.Engine) {
 	router.GET("/test", )
 	//router.POST("/wx/login", wx.WxLogin)
 	router.GET("/wx/login", wx.WxLogin)
+
+	router.POST("/v1/invitation/reward/get", middleware.TokenParsing, user.GetInvitationReward)  // 邀请码获取奖励
 }

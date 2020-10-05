@@ -14,6 +14,9 @@ var (
 	RemainingNotEnough  = &Er{Code: 40007, Message: "Remaining Not Enough"}
 	UserAlreadyVip      = &Er{Code: 40008, Message: "User Already Vip"}
 
+	// login
+	ErrTokenNotExist = &Er{Code: 50100, Message: "token not exist"}
+
 	// Continue add err types ...
 )
 

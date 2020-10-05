@@ -52,12 +52,12 @@ updated	datetime	更新时间	no	yes	no
 
 // 用户信息表（微信信息存储）
 type UserInfo struct {
-	Id             int       `json:"id" xorm:"pk autoincr INT(11)"`
-	WxOpenId       string    `json:"wx_open_id" xorm:"VARCHAR(100) default '' comment('微信open_id') index"`
-	WxUnionId      string    `json:"wx_union_id" xorm:"VARCHAR(100) default '' comment('微信union_id') index"`
-	SessionKey     string    `json:"session_key" xorm:"VARCHAR(100) unique default '' comment('微信session key')"`
-	CreateTime     time.Time `json:"create_time" xorm:"TIMESTAMP"`
-	UpdateTime     time.Time `json:"update_time" xorm:"TIMESTAMP"`
+	Id         int       `json:"id" xorm:"pk autoincr INT(11)"`
+	WxOpenId   string    `json:"wx_open_id" xorm:"VARCHAR(100) default '' comment('微信open_id') index"`
+	WxUnionId  string    `json:"wx_union_id" xorm:"VARCHAR(100) default '' comment('微信union_id') index"`
+	UserToken  string    `json:"user_token" xorm:"VARCHAR(100) unique default '' comment('用户token，前期用微信session key')"`
+	CreateTime time.Time `json:"create_time" xorm:"TIMESTAMP"`
+	UpdateTime time.Time `json:"update_time" xorm:"TIMESTAMP"`
 }
 
 func (m *UserInfo) Create() error {
@@ -88,6 +88,11 @@ func (m *UserInfo) QueryById(id int) (*UserInfo, bool, error) {
 
 func (m *UserInfo) QueryByOpenId(openId string) (*UserInfo, bool, error) {
 	has, err := common.Engine.Where("wx_open_id=?", openId).Get(m)
+	return m, has, err
+}
+
+func (m *UserInfo) QueryByUserToken(userToken string) (*UserInfo, bool, error) {
+	has, err := common.Engine.Where("user_token=?", userToken).Get(m)
 	return m, has, err
 }
 

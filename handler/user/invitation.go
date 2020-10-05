@@ -1,6 +1,10 @@
 package user
 
-import "github.com/gin-gonic/gin"
+import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"wumingtianqi/handler"
+)
 
 /**
  * @Author Evan
@@ -15,10 +19,21 @@ import "github.com/gin-gonic/gin"
  **/
 // todo 中间件，验证用户身份
 func GetInvitationReward(context *gin.Context){
-	// mine 先写最后一步，给用户发放邀请码对应权益，在lib层写
-	// 暂时用body传参，后面再弄中间件
+	// todo defer RecoverError
+	type InvitedInfo struct {
+		InvitationCode string `json:"invitation_code"`
+	}
+	iInfo := &InvitedInfo{}
+	if err := context.BindJSON(&iInfo); err != nil {
+		println("some error", err.Error())
+		handler.SendResponse(context, err, nil)
+	}
+	fmt.Println("iInfo", iInfo)
+	userToken := context.GetHeader("X-WuMing-Token")
+	fmt.Println("userToken", userToken)
+	// todo There，解析user_id，考虑放到lib层
+
 	// todo 解析post参数
-	//todo 从session_key 获取user_id
 	// todo 写view层test函数
 	// 放到header里，命名为token
 	// 那么，就完成邀请机制，可以commit
