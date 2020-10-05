@@ -55,8 +55,7 @@ type UserInfo struct {
 	Id             int       `json:"id" xorm:"pk autoincr INT(11)"`
 	WxOpenId       string    `json:"wx_open_id" xorm:"VARCHAR(100) default '' comment('微信open_id') index"`
 	WxUnionId      string    `json:"wx_union_id" xorm:"VARCHAR(100) default '' comment('微信union_id') index"`
-	SessionKey     string    `json:"session_key" xorm:"VARCHAR(100) default '' comment('微信session key')"`
-	InvitationCode string    `json:"invitation_code" xorm:"VARCHAR(100) default '' comment('邀请码')"`
+	SessionKey     string    `json:"session_key" xorm:"VARCHAR(100) unique default '' comment('微信session key')"`
 	CreateTime     time.Time `json:"create_time" xorm:"TIMESTAMP"`
 	UpdateTime     time.Time `json:"update_time" xorm:"TIMESTAMP"`
 }
@@ -89,6 +88,45 @@ func (m *UserInfo) QueryById(id int) (*UserInfo, bool, error) {
 
 func (m *UserInfo) QueryByOpenId(openId string) (*UserInfo, bool, error) {
 	has, err := common.Engine.Where("wx_open_id=?", openId).Get(m)
+	return m, has, err
+}
+
+// 用户灵活信息表
+type UserInfoFlexible struct {
+	UserId         int       `json:"user_id" xorm:"pk INT(11)"`
+	InvitationCode string    `json:"invitation_code" xorm:"VARCHAR(100) default '' comment('邀请码')"`
+	VipLevel       int       `json:"vip_level" xorm:"INT(3) default 0"`
+	Coin           int       `json:"coin" xorm:"INT(20) default 0"`
+	Diamond        int       `json:"diamond" xorm:"INT(11) default 0"`
+	ExpirationTime int       `json:"expiration_time" xorm:"INT(11) default 20000101"`
+	Creator        int       `json:"creator" xorm:"INT(11) default -1"`
+	CreateTime     time.Time `json:"create_time" xorm:"TIMESTAMP"`
+	UpdateTime     time.Time `json:"update_time" xorm:"TIMESTAMP"`
+}
+
+func (m * UserInfoFlexible) Create() error {
+	if _, err := common.Engine.InsertOne(m); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m * UserInfoFlexible) Update() error {
+	if _, err := common.Engine.Where("user_id=?", m.UserId).Update(m); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *UserInfoFlexible) Delete() error {
+	if _, err := common.Engine.Delete(m); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *UserInfoFlexible) QueryByUserId(userId int) (*UserInfoFlexible, bool, error) {
+	has, err := common.Engine.Where("user_id=?", userId).Get(m)
 	return m, has, err
 }
 
@@ -132,4 +170,10 @@ func (m *Invitation) QueryById(id int)(*Invitation, bool, error) {
 	i := new(Invitation)
 	has, err := common.Engine.Where("id=?", id).Get(i)
 	return i, has, err
+}
+
+func (m *Invitation) QueryByInvitationCode(invitationCode string)(*Invitation, bool, error) {
+	//i := new(Invitation)
+	has, err := common.Engine.Where("invitation_code=?", invitationCode).Get(m)
+	return m, has, err
 }

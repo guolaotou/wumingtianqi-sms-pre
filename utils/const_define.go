@@ -10,6 +10,7 @@ const (
 )
 
 const (
+	VIP0 = 0
 	VIP1 = 1
 	VIP2 = 2
 	VIP3 = 3

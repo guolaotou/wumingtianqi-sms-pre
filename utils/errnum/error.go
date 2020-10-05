@@ -11,6 +11,8 @@ var (
 	S2SError            = &Er{Code: 40004, Message: "S2S error"}
 	WxError             = &Er{Code: 40005, Message: "Wx error"}
 	StrangeError        = &Er{Code: 40006, Message: "Strange error"}
+	RemainingNotEnough  = &Er{Code: 40007, Message: "Remaining Not Enough"}
+	UserAlreadyVip      = &Er{Code: 40008, Message: "User Already Vip"}
 
 	// Continue add err types ...
 )

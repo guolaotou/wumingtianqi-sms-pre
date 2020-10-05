@@ -4,14 +4,13 @@ import (
 	"testing"
 	"time"
 	"wumingtianqi/model/common"
-	test "wumingtianqi/testing"
 	"wumingtianqi/model/user"
+	test "wumingtianqi/testing"
 )
 
 // go clean -testcache  // 关闭go test的缓存，否则，create sql不会真的运行。cache说明：如果满足条件，测试不会真正执行，而是从缓存中取出结果并呈现，结果中会有"cached"字样，表示来自缓存
 // go test model/user/user_test.go
 // go test -v model/user/user_test.go
-
 func TestUserToRemind(t *testing.T) {
 	test.Setup()
 	session := common.Engine.NewSession()
@@ -20,9 +19,9 @@ func TestUserToRemind(t *testing.T) {
 	// 1. 新建
 	subscriberId := 3
 	utr := &user.UserToRemind{
-		SubscriberId:  subscriberId,
+		SubscriberId:   subscriberId,
 		SubscriberName: "路飞",
-		TelephoneNum:  "13800380038",
+		TelephoneNum:   "13800380038",
 	}
 	t.Log("*** begin create session******")
 	if err := utr.Create(); err != nil {
@@ -73,7 +72,6 @@ func TestUserInfo(t *testing.T) {
 
 	// 2. 查询
 	t.Log("*** begin query session******")
-	//m2 := new(user.UserInfo)
 	m2, has, err := m.QueryById(id)
 	if err != nil || !has {
 		t.Error("model not found")
@@ -87,21 +85,44 @@ func TestUserInfo(t *testing.T) {
 	_ = m.Delete()
 }
 
-/*
-type Invitation struct {
-	Id             int       `json:"id" xorm:"pk autoincr INT(11)"`
-	InvitationCode string    `json:"invitation_code" xorm:"VARCHAR(100) unique index"`
-	TimesMax       int       `json:"times_max" xorm:"INT(11)"`
-	TimesRemaining int       `json:"times_remaining" xorm:"INT(11)"`
-	Vip            int       `json:"vip" xorm:"INT(11)"`
-	Duration       int       `json:"duration" xorm:"INT(11) default 0"`
-	Coin           int       `json:"coin" xorm:"INT(20) default 0"`
-	Diamond        int       `json:"diamond" xorm:"INT(11) default 0"`
-	Creator        int       `json:"diamond" xorm:"INT(11) default -1"`
-	CreateTime     time.Time `json:"create_time" xorm:"TIMESTAMP"`
-	UpdateTime     time.Time `json:"update_time" xorm:"TIMESTAMP"`
+// go test -v model/user/user_test.go -test.run TestUserInfoFlexible
+func TestUserInfoFlexible(t *testing.T) {
+	test.Setup()
+	session := common.Engine.NewSession()
+	defer session.Close()
+
+	// 1. 新建
+	userId := 3
+	currentTime := time.Now()
+	m := &user.UserInfoFlexible{
+		UserId:         userId,
+		VipLevel:       1,
+		Coin:           10,
+		Diamond:        10,
+		ExpirationTime: 20201003,
+		Creator:        -1,
+		CreateTime:     currentTime,
+		UpdateTime:     currentTime,
+	}
+	t.Log("*** begin create session******")
+	if err := m.Create(); err != nil {
+		panic(err)
+	}
+
+	// 2. 查询
+	t.Log("*** begin query session******")
+	m2, has, err := m.QueryByUserId(userId)
+	if err != nil || !has {
+		t.Error("model not found")
+	} else {
+		t.Log("model: ", m2)
+	}
+	t.Log("*** end query session****** ")
+
+	// 4. 删除
+	_ = m.Delete()
 }
- */
+
 func TestInvitation(t *testing.T) {
 	test.Setup()
 	session := common.Engine.NewSession()

@@ -219,9 +219,6 @@ func ProcessAll() {
 	// alter table invitation AUTO_INCREMENT=1;
 }
 
-
-
-
 // go run scripts/invitation/invitation.go
 func main() {
 	/*

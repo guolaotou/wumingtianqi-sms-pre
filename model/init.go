@@ -72,6 +72,10 @@ func InitMysql() {
 		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync UserInfo mysql: ", syncErr.Error())
 		os.Exit(1)
 	}
+	if syncErr := common.Engine.Sync2(new(user.UserInfoFlexible)); syncErr != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "Failed to sync UserInfoFlexible mysql: ", syncErr.Error())
+		os.Exit(1)
+	}
 }
 
 func InitPubSub() {
