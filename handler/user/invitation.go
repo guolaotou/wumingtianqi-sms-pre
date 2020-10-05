@@ -1,9 +1,11 @@
 package user
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
+	"strconv"
 	"wumingtianqi/handler"
+	"wumingtianqi/libs/user"
+	"wumingtianqi/utils/errnum"
 )
 
 /**
@@ -17,7 +19,6 @@ import (
  * @Param context *gin.Context
  * @return
  **/
-// todo 中间件，验证用户身份
 func GetInvitationReward(context *gin.Context){
 	// todo defer RecoverError
 	type InvitedInfo struct {
@@ -25,18 +26,14 @@ func GetInvitationReward(context *gin.Context){
 	}
 	iInfo := &InvitedInfo{}
 	if err := context.BindJSON(&iInfo); err != nil {
-		println("some error", err.Error())
+		err = errnum.New(errnum.ErrParsingPostJson, err)
 		handler.SendResponse(context, err, nil)
 	}
-	fmt.Println("iInfo", iInfo)
-	userToken := context.GetHeader("X-WuMing-Token")
-	fmt.Println("userToken", userToken)
-	// todo There，解析user_id，考虑放到lib层
-
-	// todo 解析post参数
-	// todo 写view层test函数
-	// 放到header里，命名为token
-	// 那么，就完成邀请机制，可以commit
-
-	// 然后手机号配置接口，可以严重用户机制。只需要配置最简单的一种
+	userId := context.GetHeader("X-User-Id")
+	userIdInt, _ := strconv.Atoi(userId)
+	resultData, err := user.GetInvitationReward(userIdInt, iInfo.InvitationCode)
+	if err != nil {
+		handler.SendResponse(context, err, nil)
+	}
+	handler.SendResponse(context, errnum.OK, resultData)
 }

@@ -20,47 +20,45 @@ import (
  * @Param 
  * @return
  **/
-func GetInvitationReward(invitationCode string) error {
+func GetInvitationReward(userId int, invitationCode string) (map[string]interface{}, error) {
 	// step1
 	invitationModel := &user.Invitation{}
 	invitationModel, has, err := invitationModel.QueryByInvitationCode(invitationCode)
 	if err != nil{
 		println("QueryByInvitationCode error")
-		return err
+		return nil, err
 	} else if !has {
 		println("QueryByInvitationCode not found")
-		return errors.New("QueryByInvitationCode not found")
+		return nil, errors.New("QueryByInvitationCode not found")
 	}
 	invitationVipLevel := invitationModel.Vip
 	duration := invitationModel.Duration
 	timesRemaining := invitationModel.TimesRemaining
+	println("timesRemaining", timesRemaining)
 	coin := invitationModel.Coin
 	diamond := invitationModel.Diamond
 
-	if timesRemaining <= 0 {
-		err = errnum.New(errnum.RemainingNotEnough, nil)
-		return err
-	}
-
-	// step2
-	userId := 1 // 未来从参数中拿(中间件做了之后)
+	//if timesRemaining <= 0 {
+	//	err = errnum.New(errnum.RemainingNotEnough, errors.New("RemainingNotEnough"))
+	//	return nil, err
+	//}
 
 	// step2
 	userInfoFlexibleModel := &user.UserInfoFlexible{}
 	userInfoFlexibleModel, has, err = userInfoFlexibleModel.QueryByUserId(userId)
 	if err != nil {
 		println("get user_info_flexible model error: ", err.Error())
-		return err
+		return nil, err
 	} else if !has {
 		println("user_info_flexible model not exist")
-		return errors.New("user_info_flexible model not exist")
+		return nil, errors.New("user_info_flexible model not exist")
 	} else {
 		println("model: ", userInfoFlexibleModel)
 	}
 	userVipLevel := userInfoFlexibleModel.VipLevel
 	if userVipLevel >= utils.VIP1 && userVipLevel != invitationVipLevel {
 		err = errnum.New(errnum.UserAlreadyVip, nil)
-		return err
+		return nil, err
 	}
 
 	// step3
@@ -82,27 +80,40 @@ func GetInvitationReward(invitationCode string) error {
 	defer session.Close()
 	if session.Begin() != nil {  // 事务开启
 		err = errnum.New(errnum.DbError, nil)
-		return err
+		return nil, err
 	}
 	// 更新userInfoFlexible
-	_, err = session.AllCols().Where("invitation_code=?", invitationCode).Update(*invitationModel)
+	// _, err = selfObject.session.AllCols().Where(
+	//		"user_id = ?", userProgressLifeModel.UserId).And(
+	//		"game_id = ?", userProgressLifeModel.GameId).And(
+	//		"task_id = ?", userProgressLifeModel.TaskId).Update(*userProgressLifeModel)
+	rowsAffected, err := session.AllCols().Where(
+		"invitation_code=?", invitationCode).And(
+			"times_remaining>=1").Update(*invitationModel)
+	if rowsAffected <= 0 {
+		err = errnum.New(errnum.RemainingNotEnough, errors.New("concurrent error"))
+		return nil, err
+	}
 	if err != nil {
 		fmt.Println(err.Error())
 		err = errnum.New(errnum.DbError, err)
 		_ = session.Rollback()
-		return err
+		return nil, err
 	}
 	_, err = session.Where("user_id=?", userId).Update(userInfoFlexibleModel)
 	if err != nil {
 		err = errnum.New(errnum.DbError, err)
 		_ = session.Rollback()
-		return err
+		return nil, err
 	}
 	err = session.Commit()
 	if err != nil {
 		err = errnum.New(errnum.DbError, err)
 		_ = session.Rollback()
-		return err
+		return nil, err
 	}
-	return nil
+	resultData := map[string]interface{}{
+		"result": "success",
+	}
+	return resultData, nil
 }

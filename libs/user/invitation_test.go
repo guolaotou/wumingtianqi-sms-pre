@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"testing"
 	test "wumingtianqi/testing"
 	userLib "wumingtianqi/libs/user"
@@ -11,9 +12,11 @@ import (
 // go test -v libs/user/invitation_test.go
 func TestInvitation(t *testing.T) {
 	test.Setup()
+	userId := 1
 	invitationCode := "b2772ec266-3b7-ca9f18-e20f255039"
-	err := userLib.GetInvitationReward(invitationCode)
+	resultData, err := userLib.GetInvitationReward(userId, invitationCode)
 	if err != nil {
 		println("err:", err.Error())
 	}
+	fmt.Println("resultData", resultData)
 }

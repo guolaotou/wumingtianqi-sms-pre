@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -47,5 +48,12 @@ func TestGetInvitationReward(t *testing.T) {
 	}
 	statusCode := resp.StatusCode
 	fmt.Println("statusCode", statusCode)
-	fmt.Println("resp", resp)
+
+	resBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		println("err ioutil.ReadAll", err.Error())
+	} else {
+		fmt.Println("resBody", string(resBody))
+	}
+
 }

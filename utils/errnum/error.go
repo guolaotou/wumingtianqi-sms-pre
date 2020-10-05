@@ -13,6 +13,7 @@ var (
 	StrangeError        = &Er{Code: 40006, Message: "Strange error"}
 	RemainingNotEnough  = &Er{Code: 40007, Message: "Remaining Not Enough"}
 	UserAlreadyVip      = &Er{Code: 40008, Message: "User Already Vip"}
+	ErrParsingPostJson  = &Er{Code: 40009, Message: "ErrParsingPostJson"}
 
 	// login
 	ErrTokenNotExist = &Er{Code: 50100, Message: "token not exist"}
