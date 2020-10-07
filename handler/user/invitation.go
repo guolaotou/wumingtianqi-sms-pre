@@ -19,7 +19,7 @@ import (
  * @Param context *gin.Context
  * @return
  **/
-func GetInvitationReward(context *gin.Context){
+func GetInvitationReward(context *gin.Context) {
 	// todo defer RecoverError
 	type InvitedInfo struct {
 		InvitationCode string `json:"invitation_code"`

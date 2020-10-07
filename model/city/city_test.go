@@ -55,5 +55,5 @@ func TestCity(t *testing.T) {
 	// 4. 删除
 	t.Log("*** begin delete session****** ")
 	c3.Delete()
-	t.Log("*** begin delete session****** ")
+	t.Log("*** end delete session****** ")
 }

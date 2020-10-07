@@ -14,13 +14,6 @@ type Order struct {
 	//Value           int    `json:"value" xorm:"INT(11)"`             // 数值
 }
 
-type OrderDetail struct {
-	Id              int `json:"id" xorm:"pk autoincr INT(11)"`
-	OrderId         int `json:"order_id" xorm:"INT(11)"`
-	RemindPatternId int `json:"remind_pattern_id" xorm:"INT(11)"`
-	Value           int `json:"value" xorm:"INT(11)"` // 数值
-}
-
 func (m *Order) Create() error {
 	if _, err := common.Engine.InsertOne(m); err != nil {
 		return err
@@ -65,10 +58,24 @@ func (m * Order) QueryListByTime(time string) ([]Order, error) {
 	return modelList, err
 }
 
+type OrderDetail struct {
+	Id              int `json:"id" xorm:"pk autoincr INT(11)"`
+	OrderId         int `json:"order_id" xorm:"INT(11)"`
+	RemindPatternId int `json:"remind_pattern_id" xorm:"INT(11)"`
+	Value           int `json:"value" xorm:"INT(11)"` // 数值
+}
+
 func (m *OrderDetail) QueryListByOrderId(orderId int) ([]OrderDetail, error) {
 	modelList := make([]OrderDetail, 0)
 	err := common.Engine.Where("order_id=?", orderId).Find(&modelList)
 	return modelList, err
 }
 
+// 新增订单时，params: order_detail的最小json结构
+type OrderDetailItem struct {
+	RemindPatternId string `json:"remind_pattern_id"`
+	Value           string `json:"value"`
+}
+
 // todo 以上写测试用例
+

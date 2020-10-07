@@ -54,5 +54,5 @@ func TestRemindCondition(t *testing.T)  {
 	// 4. 删除
 	t.Log("*** begin delete session****** ")
 	_ = rc.Delete()
-	t.Log("*** begin delete session****** ")
+	t.Log("*** end delete session****** ")
 }

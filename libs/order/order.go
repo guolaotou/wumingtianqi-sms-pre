@@ -139,7 +139,6 @@ func splicePattern1(city string, remindPattern *remind.RemindPattern) SplicePatt
 	return *pattern
 }
 
-
 func splicePattern2(city string, remindPattern *remind.RemindPattern, value int) SplicePatternModel {
 	// 2. 突然升温
 	var yesterdayWeather, todayWeather Weather
@@ -187,7 +186,6 @@ func splicePattern3(city string, remindPattern *remind.RemindPattern, value int)
 	}
 	return *pattern
 }
-
 
 func splicePattern8(city string, remindPattern *remind.RemindPattern) SplicePatternModel{
 	// 8. 雨过天晴
@@ -336,4 +334,38 @@ func CronOrder() {
 
 	select {}
 }
+
+/**
+ * @Author Evan
+ * @Description 新增手机号提醒订单，lib函数
+ * @Date 18:41 2020-10-07
+ * @Param 
+ * @return 
+ **/
+func AddUserOrderTel() (map[string]interface{}, error){
+
+	telephone := "18812341234"
+	city := "haidian"
+	remind_time := "2222"
+	order_detail := []orderModel.OrderDetailItem{}
+	// todo 从测试用例的角度出发解析字段，尤其是order_detail
+	// todo: step整理，然后放到注释里
+	return nil, nil
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

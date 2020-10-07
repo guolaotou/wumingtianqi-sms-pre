@@ -63,5 +63,5 @@ func TestDayWeather(t *testing.T) {
 	// 4.删除
 	t.Log("*** begin delete session****** ")
 	d.Delete()
-	t.Log("*** begin delete session****** ")
+	t.Log("*** end delete session****** ")
 }

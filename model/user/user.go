@@ -98,15 +98,18 @@ func (m *UserInfo) QueryByUserToken(userToken string) (*UserInfo, bool, error) {
 
 // 用户灵活信息表
 type UserInfoFlexible struct {
-	UserId         int       `json:"user_id" xorm:"pk INT(11)"`
-	InvitationCode string    `json:"invitation_code" xorm:"VARCHAR(100) default '' comment('邀请码')"`
-	VipLevel       int       `json:"vip_level" xorm:"INT(3) default 0"`
-	Coin           int       `json:"coin" xorm:"INT(20) default 0"`
-	Diamond        int       `json:"diamond" xorm:"INT(11) default 0"`
-	ExpirationTime int       `json:"expiration_time" xorm:"INT(11) default 20000101"`
-	Creator        int       `json:"creator" xorm:"INT(11) default -1"`
-	CreateTime     time.Time `json:"create_time" xorm:"TIMESTAMP"`
-	UpdateTime     time.Time `json:"update_time" xorm:"TIMESTAMP"`
+	UserId                   int       `json:"user_id" xorm:"pk INT(11)"`
+	InvitationCode           string    `json:"invitation_code" xorm:"VARCHAR(100) default '' comment('邀请码')"`
+	VipLevel                 int       `json:"vip_level" xorm:"INT(3) default 0"`
+	WechatOrderRemaining     int       `json:"wechat_order_remaining" xorm:"INT(3) default 0 comment('微信订单剩余配置数')"`
+	TelOrderRemaining        int       `json:"tel_order_remaining" xorm:"INT(3) default 0 comment('手机号订单剩余配置数')"`
+	TodayEditChanceRemaining int       `json:"today_edit_chance_remaining" xorm:"INT(3) default 10 comment('当天剩余编辑次数')"`
+	Coin                     int       `json:"coin" xorm:"INT(20) default 0"`
+	Diamond                  int       `json:"diamond" xorm:"INT(11) default 0"`
+	ExpirationTime           int       `json:"expiration_time" xorm:"INT(11) default 20000101"`
+	Creator                  int       `json:"creator" xorm:"INT(11) default -1"`
+	CreateTime               time.Time `json:"create_time" xorm:"TIMESTAMP"`
+	UpdateTime               time.Time `json:"update_time" xorm:"TIMESTAMP"`
 }
 
 func (m * UserInfoFlexible) Create() error {
@@ -116,7 +119,7 @@ func (m * UserInfoFlexible) Create() error {
 	return nil
 }
 
-func (m * UserInfoFlexible) Update() error {
+func (m *UserInfoFlexible) Update() error {
 	if _, err := common.Engine.Where("user_id=?", m.UserId).Update(m); err != nil {
 		return err
 	}

@@ -23,9 +23,6 @@ type RemindCondition struct {
 	ConfigGroupId int    `json:"config_group_id" xorm:"INT(11)"`
 }
 
-// todo 测试用例
-// todo 所有数据造；然后写"提醒内容模块"
-
 func (rc *RemindCondition) Create() error {
 	if _, err := common.Engine.InsertOne(rc); err != nil {
 		return err

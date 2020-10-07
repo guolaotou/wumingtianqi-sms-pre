@@ -31,11 +31,11 @@ func TestUserToRemind(t *testing.T) {
 	// 2. 查询
 	t.Log("*** begin query session******")
 
-	utr2, has, err := user.QueryById(subscriberId)
+	utr, has, err := user.QueryById(subscriberId)
 	if err != nil || !has {
 		t.Error("rc not found")
 	} else {
-		t.Log("rc: ", utr2)
+		t.Log("rc: ", utr)
 	}
 	t.Log("*** end query session****** ")
 
@@ -47,7 +47,7 @@ func TestUserToRemind(t *testing.T) {
 	// 4. 删除
 	t.Log("*** begin delete session****** ")
 	_ = utr.Delete()
-	t.Log("*** begin delete session****** ")
+	t.Log("*** end delete session****** ")
 }
 
 func TestUserInfo(t *testing.T) {
@@ -111,11 +111,11 @@ func TestUserInfoFlexible(t *testing.T) {
 
 	// 2. 查询
 	t.Log("*** begin query session******")
-	m2, has, err := m.QueryByUserId(userId)
+	m, has, err := m.QueryByUserId(userId)
 	if err != nil || !has {
 		t.Error("model not found")
 	} else {
-		t.Log("model: ", m2)
+		t.Log("model: ", m)
 	}
 	t.Log("*** end query session****** ")
 
