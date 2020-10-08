@@ -2,11 +2,14 @@ package order
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/robfig/cron"
 	"log"
+	"time"
+	"wumingtianqi/model/user"
 	"sort"
 	"strconv"
 	"strings"
@@ -16,6 +19,7 @@ import (
 	"wumingtianqi/model/remind"
 	weatherModel "wumingtianqi/model/weather"
 	"wumingtianqi/utils"
+	"wumingtianqi/utils/errnum"
 )
 
 // todo 用户建立订单
@@ -338,19 +342,89 @@ func CronOrder() {
 /**
  * @Author Evan
  * @Description 新增手机号提醒订单，lib函数
+	step1 params校验：手机号、城市校验、提醒时间校验
+	step2 获取用户当前可配置的手机号订单数量，若不够，直接返回报错
+	step3 将用户配置的order, orderDetail写到数据库中
+step4 事务：order表、order_detail表、user_info_flexible表同时更新
  * @Date 18:41 2020-10-07
  * @Param 
  * @return 
  **/
-func AddUserOrderTel() (map[string]interface{}, error){
+func AddUserOrderTel(userId int, telephone string, city string, remindTime string,
+	orderDetail []orderModel.OrderDetailItem) (map[string]interface{}, error){
+	// step1 params校验：手机号、城市校验、提醒时间校验，提醒权限校验
+	// step2 获取用户当前可配置的手机号订单数量，若不够，直接返回报错
+	userInfoFlexibleModel := &user.UserInfoFlexible{}
+	userInfoFlexibleModel, has, err := userInfoFlexibleModel.QueryByUserId(userId)
+	if err != nil {
+		println("get user_info_flexible model error: ", err.Error())
+		return nil , err
+	} else if !has {
+		println("user_info_flexible model not exist")
+		return nil, errors.New("user_info_flexible model not exist")
+	} else {
+		println("model: ", userInfoFlexibleModel)
+	}
+	telOrderRemaining := userInfoFlexibleModel.TelOrderRemaining
+	if telOrderRemaining <= 0 {
+		err = errnum.New(errnum.ErrTelOrderChanceInsufficient, nil)
+		return nil, err
+	}
+	// step3 将用户配置的order表中（后面的其他步骤如果操作失败，手动删除刚添加的数据）
+	currentTime := time.Now()
+	orderModelToAdd := orderModel.Order{}
+	orderModelToAdd.UserId = userId
+	orderModelToAdd.RemindCity = city
+	orderModelToAdd.RemindTime = remindTime
+	orderModelToAdd.CreateTime = currentTime
+	orderModelToAdd.UpdateTime = currentTime
+	err = orderModelToAdd.Create()
+	if err != nil {
+		err = errnum.New(errnum.DbError, nil)
+		return nil, err
+	}
+	orderId := orderModelToAdd.OrderId
 
-	telephone := "18812341234"
-	city := "haidian"
-	remind_time := "2222"
-	order_detail := []orderModel.OrderDetailItem{}
-	// todo 从测试用例的角度出发解析字段，尤其是order_detail
-	// todo: step整理，然后放到注释里
-	return nil, nil
+	// step4 事务：order_detail表、user_info_flexible表同时更新
+	session := common.Engine.NewSession()
+	defer session.Close()
+	if session.Begin() != nil {  // 事务开启
+		err = errnum.New(errnum.DbError, nil)
+		return nil, err
+	}
+	// 4.1 新增order_detail表
+	for _, orderDetailItem := range orderDetail {
+		orderDetailModelToAdd := &orderModel.OrderDetail{
+			OrderId:         orderId,
+			RemindPatternId: orderDetailItem.RemindPatternId,
+			Value:           orderDetailItem.Value,
+			CreateTime:      currentTime,
+			UpdateTime:      currentTime,
+		}
+		if _, err = session.InsertOne(orderDetailModelToAdd); err != nil {
+			err = errnum.New(errnum.DbError, nil)
+			return nil, err
+		}
+	}
+
+	// 4.2 更新userInfoFlexibleModel
+	userInfoFlexibleModel.TelOrderRemaining -= 1
+	userInfoFlexibleModel.TodayEditChanceRemaining -= 1
+	if _, err = session.AllCols().Where("user_id=?", userId).Update(*userInfoFlexibleModel); err != nil {
+		err = errnum.New(errnum.DbError, err)
+		return nil, err
+	}
+
+	if err = session.Commit(); err != nil {
+		err = errnum.New(errnum.DbError, err)
+		_ = session.Rollback()
+		_ = orderModelToAdd.Delete()  // todo未来可以考虑在这里加上err，并且加上log，打上断点
+		return nil, err
+	}
+	resultData := map[string]interface{}{
+		"result": "success",
+	}
+	return resultData, nil
 }
 
 

@@ -83,10 +83,6 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 		return nil, err
 	}
 	// 更新userInfoFlexible
-	// _, err = selfObject.session.AllCols().Where(
-	//		"user_id = ?", userProgressLifeModel.UserId).And(
-	//		"game_id = ?", userProgressLifeModel.GameId).And(
-	//		"task_id = ?", userProgressLifeModel.TaskId).Update(*userProgressLifeModel)
 	rowsAffected, err := session.AllCols().Where(
 		"invitation_code=?", invitationCode).And(
 			"times_remaining>=1").Update(*invitationModel)
@@ -97,13 +93,11 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 	if err != nil {
 		fmt.Println(err.Error())
 		err = errnum.New(errnum.DbError, err)
-		_ = session.Rollback()
 		return nil, err
 	}
 	_, err = session.Where("user_id=?", userId).Update(userInfoFlexibleModel)
 	if err != nil {
 		err = errnum.New(errnum.DbError, err)
-		_ = session.Rollback()
 		return nil, err
 	}
 	err = session.Commit()

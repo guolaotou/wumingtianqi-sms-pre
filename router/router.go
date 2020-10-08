@@ -2,11 +2,11 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"wumingtianqi/handler/order"
 	"wumingtianqi/handler/user"
 	"wumingtianqi/handler/wx"
 	"wumingtianqi/router/middleware"
 )
-
 
 func InitRouter(router *gin.Engine) {
 	//router := gin.Default()
@@ -14,5 +14,6 @@ func InitRouter(router *gin.Engine) {
 	//router.POST("/wx/login", wx.WxLogin)
 	router.GET("/wx/login", wx.WxLogin)
 
-	router.POST("/v1/invitation/reward/get", middleware.TokenParsing, user.GetInvitationReward)  // 邀请码获取奖励
+	router.POST("/v1/invitation/reward/get", middleware.TokenParsing, user.GetInvitationReward) // 邀请码获取奖励
+	router.POST("/v1/user/order/tel/add", middleware.TokenParsing, order.AddUserOrderTel)
 }

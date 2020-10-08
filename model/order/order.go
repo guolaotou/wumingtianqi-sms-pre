@@ -1,17 +1,18 @@
 package order
 
 import (
+	"time"
 	"wumingtianqi/model/common"
 )
 
 // 用户订阅表
 type Order struct {
-	OrderId         int    `json:"order_id" xorm:"pk autoincr INT(11)"`
-	UserId          int    `json:"user_id" xorm:"INT(11)"`
-	RemindCity      string `json:"remind_city" xorm:"json"`          // 城市的拼音
-	RemindTime      string `json:"remind_time" xorm:"VARCHAR(4)"`    // 提醒时间， 0900
-	//RemindPatternId int    `json:"remind_pattern_id" xorm:"INT(11)"` // 提醒模式表id
-	//Value           int    `json:"value" xorm:"INT(11)"`             // 数值
+	OrderId    int       `json:"order_id" xorm:"pk autoincr INT(11)"`
+	UserId     int       `json:"user_id" xorm:"INT(11)"`
+	RemindCity string    `json:"remind_city" xorm:"json"`       // 城市的拼音
+	RemindTime string    `json:"remind_time" xorm:"VARCHAR(4)"` // 提醒时间， 0900
+	CreateTime time.Time `json:"create_time" xorm:"TIMESTAMP"`
+	UpdateTime time.Time `json:"update_time" xorm:"TIMESTAMP"`
 }
 
 func (m *Order) Create() error {
@@ -63,6 +64,8 @@ type OrderDetail struct {
 	OrderId         int `json:"order_id" xorm:"INT(11)"`
 	RemindPatternId int `json:"remind_pattern_id" xorm:"INT(11)"`
 	Value           int `json:"value" xorm:"INT(11)"` // 数值
+	CreateTime time.Time `json:"create_time" xorm:"TIMESTAMP"`
+	UpdateTime time.Time `json:"update_time" xorm:"TIMESTAMP"`
 }
 
 func (m *OrderDetail) QueryListByOrderId(orderId int) ([]OrderDetail, error) {
@@ -73,8 +76,8 @@ func (m *OrderDetail) QueryListByOrderId(orderId int) ([]OrderDetail, error) {
 
 // 新增订单时，params: order_detail的最小json结构
 type OrderDetailItem struct {
-	RemindPatternId string `json:"remind_pattern_id"`
-	Value           string `json:"value"`
+	RemindPatternId int `json:"remind_pattern_id"`
+	Value           int `json:"value"`
 }
 
 // todo 以上写测试用例

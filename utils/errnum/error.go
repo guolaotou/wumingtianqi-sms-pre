@@ -18,6 +18,9 @@ var (
 	// login
 	ErrTokenNotExist = &Er{Code: 50100, Message: "token not exist"}
 
+	// order
+	ErrTelOrderChanceInsufficient = &Er{Code: 50200, Message:"Tel Order Chance Insufficient"}
+
 	// Continue add err types ...
 )
 
