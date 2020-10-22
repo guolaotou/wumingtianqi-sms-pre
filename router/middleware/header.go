@@ -21,10 +21,12 @@ func TokenParsing(context *gin.Context) {
 	if userInfoModel1, has, err := userInfoModel.QueryByUserToken(token); err != nil {
 		err := errnum.New(errnum.DbError, err)
 		handler.SendResponse(context, err, nil)
+		return
 	} else if !has {
 		err = errnum.New(errnum.ErrTokenNotExist, nil)
 		// todo log
 		handler.SendResponse(context, err, nil)
+		return
 	} else {
 		context.Request.Header.Add("X-User-Id", strconv.Itoa(userInfoModel1.Id))
 	}

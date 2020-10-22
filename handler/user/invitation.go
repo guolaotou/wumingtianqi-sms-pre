@@ -28,12 +28,15 @@ func GetInvitationReward(context *gin.Context) {
 	if err := context.BindJSON(&iInfo); err != nil {
 		err = errnum.New(errnum.ErrParsingPostJson, err)
 		handler.SendResponse(context, err, nil)
+		return
 	}
 	userId := context.GetHeader("X-User-Id")
 	userIdInt, _ := strconv.Atoi(userId)
 	resultData, err := user.GetInvitationReward(userIdInt, iInfo.InvitationCode)
 	if err != nil {
 		handler.SendResponse(context, err, nil)
+		return
 	}
 	handler.SendResponse(context, errnum.OK, resultData)
+	return
 }

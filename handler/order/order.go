@@ -31,6 +31,7 @@ func AddUserOrderTel(context *gin.Context) {
 		err = errnum.New(errnum.ErrParsingPostJson, err)
 		fmt.Println("err: " + err.Error())
 		handler.SendResponse(context, err, nil)
+		return
 	}
 	fmt.Println("postParams", postParams)
 	userId := context.GetHeader("X-User-Id")
@@ -40,6 +41,8 @@ func AddUserOrderTel(context *gin.Context) {
 		postParams.RemindTime, postParams.OrderDetail)
 	if err != nil {
 		handler.SendResponse(context, err, nil)
+		return
 	}
 	handler.SendResponse(context, errnum.OK, resultData)
+	return
 }

@@ -20,7 +20,7 @@ func (m *UserToRemind) Create() error {
 }
 
 func (m *UserToRemind) Update() error {
-	if _, err := common.Engine.Where("order_id=?", m.SubscriberId).Update(m); err != nil {
+	if _, err := common.Engine.Where("subscriber_id=?", m.SubscriberId).Update(m); err != nil {
 		return err
 	}
 	return nil
@@ -55,7 +55,7 @@ type UserInfo struct {
 	Id         int       `json:"id" xorm:"pk autoincr INT(11)"`
 	WxOpenId   string    `json:"wx_open_id" xorm:"VARCHAR(100) default '' comment('微信open_id') index"`
 	WxUnionId  string    `json:"wx_union_id" xorm:"VARCHAR(100) default '' comment('微信union_id') index"`
-	UserToken  string    `json:"user_token" xorm:"VARCHAR(100) unique default '' comment('用户token，前期用微信session key')"`
+	UserToken  string    `json:"user_token" xorm:"VARCHAR(100) default '' comment('用户token，前期用微信session key')"`
 	CreateTime time.Time `json:"create_time" xorm:"TIMESTAMP"`
 	UpdateTime time.Time `json:"update_time" xorm:"TIMESTAMP"`
 }

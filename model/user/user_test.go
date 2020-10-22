@@ -51,6 +51,7 @@ func TestUserToRemind(t *testing.T) {
 }
 
 func TestUserInfo(t *testing.T) {
+	// go test -v model/user/user_test.go -test.run TestUserInfo
 	test.Setup()
 	session := common.Engine.NewSession()
 	defer session.Close()

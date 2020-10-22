@@ -13,7 +13,7 @@ import (
 	"wumingtianqi/utils/errnum"
 )
 
-func WxLogin(wechatCode string) (int, error) {
+func WxLogin(wechatCode string) (map[string]interface{}, error) {
 	/* 对应API：用户微信登录
 		1.jscode -> open_id
 		2.查数据库user_info表，查该open_id是否有对应model
@@ -24,7 +24,7 @@ func WxLogin(wechatCode string) (int, error) {
 	openId, sessionKey, err := GetUserOpenId(wechatCode)
 	fmt.Println("openId",openId, "sessionKey: ", sessionKey)
 	if err != nil {
-		return -1, err
+		return nil, err
 	}
 
 	// step2: 查数据库user_info表，查该open_id是否有对应model
@@ -33,22 +33,28 @@ func WxLogin(wechatCode string) (int, error) {
 
 	if err != nil {
 		err = errnum.New(errnum.DbError, nil)
-		return -1, err
+		return nil, err
 	} else if has == false {
 		// 新建
 		currentTime := time.Now()
 		u.WxOpenId = openId
 		u.WxUnionId = ""
+		u.UserToken = sessionKey
 		u.CreateTime = currentTime
 		u.UpdateTime = currentTime
 		if err := u.Create(); err != nil {
 			err = errnum.New(errnum.DbError, errors.New("create sql error"))
-			return -1, err
+			return nil, err
 		}
 	}
 
-	userId := u.Id
-	return userId, nil
+	// 返回UserToken
+	res := map[string]interface{} {
+		"user_id": u.Id,
+		"user_token": u.UserToken,
+	}
+
+	return res, nil
 }
 
 func GetUserOpenId(wechatCode string) (string, string, error) {

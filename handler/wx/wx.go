@@ -19,15 +19,13 @@ func WxLogin (context *gin.Context){
 	wechatCode := context.Query("wechatCode")
 	if wechatCode == "" {
 		handler.SendResponse(context, errnum.ParamsError, nil)
+		return
 	}
-	userId, err := wx.WxLogin(wechatCode)  // lib函数
+	res, err := wx.WxLogin(wechatCode)  // lib函数
 	if err != nil {
 		//log.L().Error(err.Error())  // todo 以后再封装log模块
 		handler.SendResponse(context, err, nil)
-	}
-
-	res := map[string]interface{} {
-		"user_id": userId,
+		return
 	}
 	handler.SendResponse(context, errnum.OK, res)
 	return
