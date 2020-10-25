@@ -5,51 +5,6 @@ import (
 	"wumingtianqi/model/common"
 )
 
-// 被提醒用户表
-type UserToRemind struct {
-	SubscriberId   int    `json:"subscriber_id" xorm:"pk autoincr INT(11)"`
-	SubscriberName string `json:"subscriber_name" xorm:"VARCHAR(30)"`
-	TelephoneNum   string `json:"telephone_num" xorm:"VARCHAR(33)"`
-}
-
-func (m *UserToRemind) Create() error {
-	if _, err := common.Engine.InsertOne(m); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *UserToRemind) Update() error {
-	if _, err := common.Engine.Where("subscriber_id=?", m.SubscriberId).Update(m); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *UserToRemind) Delete() error {
-	if _, err := common.Engine.Delete(m); err != nil {
-		return err
-	}
-	return nil
-}
-
-func QueryById(subscriberId int)(*UserToRemind, bool, error) {
-	utr := new(UserToRemind)
-	has, err := common.Engine.Where("subscriber_id=?", subscriberId).Get(utr)
-	return utr, has, err
-}
-
-/*
-用户信息表
-
-Field	type	Desc	Unique	Index	Null
-id	int(11)	用户id;自增主键	yes	yes	no
-wx_open_id	varchar(100)	微信open_id	yes	yes	no
-wx_union_id	varchar(100)	微信union_id	yes	yes	no
-created	datetime	创建时间	no	yes	no
-updated	datetime	更新时间	no	yes	no
- */
-
 // 用户信息表（微信信息存储）
 type UserInfo struct {
 	Id         int       `json:"id" xorm:"pk autoincr INT(11)"`

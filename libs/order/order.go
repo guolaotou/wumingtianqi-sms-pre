@@ -224,13 +224,12 @@ func SpliceOrders(time string) {
 	// 若有，则拼接提醒用语，放到队列
 	// 以上操作可以考虑分批开goroutine
 	order := orderModel.Order{}
-	orderModelList, err := order.QueryListByTime(time)
+	orderModelList, err := order.QueryListByTime(time)  // todo 测试：如果该时间下有脏数据，后面代码的健壮性
 	if err != nil {
 		panic(err)
 	}
 	for _, oneOrderModel := range orderModelList {
 		orderId := oneOrderModel.OrderId
-		//user_id := oneOrderModel.UserId
 		city := oneOrderModel.RemindCity
 
 		// 根据order_id找到order_detail
@@ -294,9 +293,12 @@ func SpliceOrders(time string) {
 				}
 			}
 			needToRemindOrder := common.NeedToRemindOrder{
-				SubscriberId: oneOrderModel.UserId,
-				City:         city,
-				Tips:         tips,
+				//SubscriberId: oneOrderModel.UserId,
+				City:           city,
+				SubscriberName: oneOrderModel.SubscriberName,
+				TelephoneNum:   oneOrderModel.TelephoneNum,
+				Creator:        oneOrderModel.Creator,
+				Tips:           tips,
 			}
 			needToRemindOrderJson, err := json.Marshal(needToRemindOrder)
 			if err != nil {
@@ -373,9 +375,10 @@ func AddUserOrderTel(userId int, telephone string, city string, remindTime strin
 	// step3 将用户配置的order表中（后面的其他步骤如果操作失败，手动删除刚添加的数据）
 	currentTime := time.Now()
 	orderModelToAdd := orderModel.Order{}
-	orderModelToAdd.UserId = userId
 	orderModelToAdd.RemindCity = city
 	orderModelToAdd.RemindTime = remindTime
+	orderModelToAdd.TelephoneNum = telephone
+	orderModelToAdd.Creator = -1  // todo 更新这个
 	orderModelToAdd.CreateTime = currentTime
 	orderModelToAdd.UpdateTime = currentTime
 	err = orderModelToAdd.Create()

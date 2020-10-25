@@ -6,13 +6,17 @@ import (
 )
 
 // 用户订阅表
+// todo xorm 丰富default和comment
 type Order struct {
-	OrderId    int       `json:"order_id" xorm:"pk autoincr INT(11)"`
-	UserId     int       `json:"user_id" xorm:"INT(11)"`
-	RemindCity string    `json:"remind_city" xorm:"json"`       // 城市的拼音
-	RemindTime string    `json:"remind_time" xorm:"VARCHAR(4)"` // 提醒时间， 0900
-	CreateTime time.Time `json:"create_time" xorm:"TIMESTAMP"`
-	UpdateTime time.Time `json:"update_time" xorm:"TIMESTAMP"`
+	OrderId 	   int       `json:"order_id" xorm:"pk autoincr INT(11)"`
+	//UserId     int       `json:"user_id" xorm:"INT(11)"`
+	RemindCity     string    `json:"remind_city" xorm:"json"`            // 城市的拼音
+	RemindTime     string    `json:"remind_time" xorm:"VARCHAR(4)"`      // 提醒时间， 0900
+	SubscriberName string    `json:"subscriber_name" xorm:"VARCHAR(30)"` // 被提醒者的姓名
+	TelephoneNum   string    `json:"telephone_num" xorm:"VARCHAR(33)"`
+	Creator        int       `json:"creator" xorm:"INT(11)"`
+	CreateTime     time.Time `json:"create_time" xorm:"TIMESTAMP"`
+	UpdateTime     time.Time `json:"update_time" xorm:"TIMESTAMP"`
 }
 
 func (m *Order) Create() error {
@@ -41,11 +45,12 @@ func (m *Order) QueryOneByOrderId(orderId int) (*Order, bool, error) {
 	return m, has, err
 }
 
-func (m *Order) QueryListByUserId(userId int) ([]Order, error) {
-	modelList := make([]Order, 0)
-	err := common.Engine.Find(&modelList)
-	return modelList, err
-}
+// 暂时注释
+//func (m *Order) QueryListByUserId(userId int) ([]Order, error) {
+//	modelList := make([]Order, 0)
+//	err := common.Engine.Find(&modelList)
+//	return modelList, err
+//}
 
 func (m *Order) QueryListByCity(city string) ([]Order, error) {
 	modelList := make([]Order, 0)

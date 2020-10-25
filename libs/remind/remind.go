@@ -7,12 +7,10 @@ import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"log"
-	"strconv"
 	"time"
 	"wumingtianqi/libs/sms"
 	"wumingtianqi/model/city"
 	"wumingtianqi/model/common"
-	"wumingtianqi/model/user"
 )
 
 // 读取需要提醒的订单队列，拼接短信
@@ -33,20 +31,15 @@ func PubSubOrder() {  // 订阅"需要提醒的订单" then发布what？？
 			}
 
 			// 2.拼接短信，然后放到短信队列里
-			// 2.1根据SubscriberId找到电话
-			user, has, err := user.QueryById(needToRemindOrder.SubscriberId)
-			if err != nil || !has {
-				log.Printf("get user %s error", strconv.Itoa(needToRemindOrder.SubscriberId))
-			}
-			// 2.2根据city找到城市的中文
+			// 2.1根据city找到城市的中文
 			cityModel, _, _ := city.QueryByPinYin(needToRemindOrder.City)
 			district := cityModel.District
 
-			// 2.3 拼接完整短信  // todo libs/order/order.go pattern那控制字符数，不要在后面控制了；测出字符边界在哪
+			// 2.2 拼接完整短信  // todo libs/order/order.go pattern那控制字符数，不要在后面控制了；测出字符边界在哪
 			var toSendContent string  // todo 根据提醒时间，控制字符是明日还是今日；还是增加标志位来判断
 			toSendContent = needToRemindOrder.Tips
 			sms2Send := common.Sms2Send{
-				TelephoneNum:  user.TelephoneNum,
+				TelephoneNum:  needToRemindOrder.TelephoneNum,
 				City : district,
 				ToSendContent: toSendContent,
 			}
