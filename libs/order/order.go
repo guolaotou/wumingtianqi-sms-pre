@@ -341,6 +341,8 @@ func CronOrder() {
 	select {}
 }
 
+
+//  todo 接口函数要放到一个interface里吗？
 /**
  * @Author Evan
  * @Description 新增手机号提醒订单，lib函数
@@ -430,8 +432,93 @@ func AddUserOrderTel(userId int, telephone string, city string, remindTime strin
 	return resultData, nil
 }
 
+/**
+ * @Author Evan
+ * @Description 查询用户手机号订单，lib函数
+	step1: 查询用户order表（by creator）和orderDetail表（by order_id）
+	step2: 拼接返回值，返回
+ * @Date 10:13 2020-11-03
+ * @Param
+ * @return
+ **/
+func GetUserOrderTel(userId int) (map[string]interface{}, error){
+	orderModelInstance := orderModel.Order{}
+	orderModelList, err := orderModelInstance.QueryListByCreator(userId)
+	if err != nil {
+		err = errnum.New(errnum.DbError, err)
+		return nil, err
+	}
 
+	resOrderAndDetailList := make([]orderModel.ResOrderAndDetail, 0)
+	for _, oneOrderModel := range orderModelList {
+		// 这里和libs/order/order.go SpliceOrders方法差不多；
+		var resOrderAndDetail = new(orderModel.ResOrderAndDetail)
+		// PreTele, CityName未来做，其中CityName做map
+		resOrderAndDetail.OrderId = oneOrderModel.OrderId
+		resOrderAndDetail.Telephone = oneOrderModel.TelephoneNum  // todo 现在数据库中存的还是+86
+		resOrderAndDetail.City = oneOrderModel.RemindCity
+		resOrderAndDetail.RemindTime = oneOrderModel.RemindTime
 
+		// 先查数据库
+		orderDetailInstance := orderModel.OrderDetail{}
+		orderDetailList, err := orderDetailInstance.QueryListByOrderId(oneOrderModel.OrderId)
+		if err != nil {
+			err = errnum.New(errnum.DbError, err)
+			return nil, err
+		}
+
+		for _, oneOrderDetailModel := range orderDetailList {
+			var resOrderDetailItem = new(orderModel.ResOrderDetailItem)
+			resOrderDetailItem.Value = oneOrderDetailModel.Value
+			resOrderDetailItem.RemindPatternId = oneOrderDetailModel.RemindPatternId
+			resOrderAndDetail.OrderDetail = append(resOrderAndDetail.OrderDetail, *resOrderDetailItem)
+		}
+		resOrderAndDetailList = append(resOrderAndDetailList, *resOrderAndDetail)
+	}
+	resultData := map[string]interface{}{
+		"orders": resOrderAndDetailList,
+	}
+	// todo 测试空的情况；写测试用例?
+	return resultData, nil
+}
+
+// todo 改
+func UpdateUserOrderTel(resOrderAndDetail orderModel.ResOrderAndDetail, userId int) (map[string]interface{}, error) {
+	// todo 添加注释？
+	/*
+	step1 根据order_id 查该order信息，判断该order是否属于该用户；若属于才进行下一步
+	step2 参数校验
+	step3 修改该order信息，提交
+	step4 返回
+	 */
+	return nil, nil
+}
+
+// todo 删除
+func DeleteUserOrderTel(orderId int) (error) {
+	/* todo写注释
+	step1: 根据order_id查创建者，若属于该用户，则删除
+	step2: 返回
+	 */
+	orderModelInstance := orderModel.Order{}
+	theOrderModel, has, err := orderModelInstance.QueryOneByOrderId(orderId)
+	if err != nil {
+		err = errnum.New(errnum.DbError, err)
+		// todo log
+		return err
+	} else if !has {
+		err = errnum.New(errnum.ErrOrderNotFound, nil)
+	}
+
+	// delete
+	err = theOrderModel.Delete()
+	if err != nil {
+		err = errnum.New(errnum.DbError, err)
+		// todo log
+		return err
+	}
+	return nil
+}
 
 
 

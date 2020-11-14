@@ -1,6 +1,7 @@
 package order
 
 import (
+	"fmt"
 	"testing"
 	test "wumingtianqi/testing"
 	orderLib "wumingtianqi/libs/order"
@@ -14,4 +15,14 @@ func TestCity(t *testing.T) {
 	orderLib.FakeWeather()
 	// 参数：时间，例如0900；查询所有order表中时间等于0900的
 	orderLib.SpliceOrders("2300")
+}
+
+// go clean -testcache
+// go test -v libs/order/order_test.go -test.run TestGetUserOrderTel
+func TestGetUserOrderTel(t *testing.T) {
+	test.Setup()
+	userId := 1
+	resultData, err := orderLib.GetUserOrderTel(userId)
+	fmt.Println("resultData", resultData)
+	fmt.Println("err", err)
 }

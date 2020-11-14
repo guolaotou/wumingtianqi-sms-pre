@@ -45,16 +45,15 @@ func (m *Order) QueryOneByOrderId(orderId int) (*Order, bool, error) {
 	return m, has, err
 }
 
-// 暂时注释
-//func (m *Order) QueryListByUserId(userId int) ([]Order, error) {
-//	modelList := make([]Order, 0)
-//	err := common.Engine.Find(&modelList)
-//	return modelList, err
-//}
+func (m *Order) QueryListByCreator(creator int) ([]Order, error) {
+	modelList := make([]Order, 0)
+	err := common.Engine.Where("creator=?", creator).Find(&modelList)
+	return modelList, err
+}
 
 func (m *Order) QueryListByCity(city string) ([]Order, error) {
 	modelList := make([]Order, 0)
-	err := common.Engine.Find(&modelList)
+	err := common.Engine.Where("city=?", city).Find(&modelList)
 	return modelList, err
 }
 
@@ -86,4 +85,17 @@ type OrderDetailItem struct {
 }
 
 // todo 以上写测试用例
+type ResOrderDetailItem struct {
+	RemindPatternId int `json:"remind_pattern_id"`
+	Value           int `json:"value"`
+}
+type ResOrderAndDetail struct {
+	OrderId     int                  `json:"order_id"`
+	PreTele     string               `json:"pre_tele"`
+	Telephone   string               `json:"telephone"`
+	City        string               `json:"city"`
+	CityName    string               `json:"city_name"`
+	RemindTime  string               `json:"remind_time"`
+	OrderDetail []ResOrderDetailItem `json:"order_detail"`
+}
 
