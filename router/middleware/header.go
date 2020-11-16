@@ -17,8 +17,8 @@ import (
  **/
 func TokenParsing(context *gin.Context) {
 	token := context.GetHeader("X-WuMing-Token")
-	userInfoModel := &user.UserInfo{}
-	if userInfoModel1, has, err := userInfoModel.QueryByUserToken(token); err != nil {
+	userInfoModelInstance := &user.UserInfo{}
+	if userInfoModel, has, err := userInfoModelInstance.QueryByUserToken(token); err != nil {
 		err := errnum.New(errnum.DbError, err)
 		handler.SendResponse(context, err, nil)
 		return
@@ -28,7 +28,7 @@ func TokenParsing(context *gin.Context) {
 		handler.SendResponse(context, err, nil)
 		return
 	} else {
-		context.Request.Header.Add("X-User-Id", strconv.Itoa(userInfoModel1.Id))
+		context.Request.Header.Add("X-User-Id", strconv.Itoa(userInfoModel.Id))
 	}
 	context.Next()
 	return

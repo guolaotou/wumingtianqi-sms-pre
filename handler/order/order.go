@@ -21,6 +21,7 @@ import (
 func AddUserOrderTel(context *gin.Context) {
 	// post参数解析，然后调用lib函数；
 	type PostParams struct {
+		PreTele     string                       `json:"pre_tele"`
 		Telephone   string                       `json:"telephone"`
 		City        string                       `json:"city"`
 		RemindTime  string                       `json:"remind_time"`
@@ -37,7 +38,7 @@ func AddUserOrderTel(context *gin.Context) {
 	userId := context.GetHeader("X-User-Id")
 	userIdInt, _ := strconv.Atoi(userId)
 	resultData, err := order.AddUserOrderTel(
-		userIdInt, postParams.Telephone, postParams.City,
+		userIdInt, postParams.PreTele, postParams.Telephone, postParams.City,
 		postParams.RemindTime, postParams.OrderDetail)
 	if err != nil {
 		handler.SendResponse(context, err, nil)
@@ -45,4 +46,55 @@ func AddUserOrderTel(context *gin.Context) {
 	}
 	handler.SendResponse(context, errnum.OK, resultData)
 	return
+}
+
+
+/**
+ * @Author Evan
+ * @Description 获取用户的所有手机号订单
+ * @Date 16:39 2020-11-16
+ * @Param
+ * @return
+ **/
+func GetUserOrderTel(context *gin.Context) {
+	// todo defer RecoverError
+	userId := context.GetHeader("X-User-Id")
+	userIdInt, _ := strconv.Atoi(userId)
+	resultData, err := order.GetUserOrderTel(userIdInt)
+	if err != nil {
+		handler.SendResponse(context, err, nil)
+	}
+	handler.SendResponse(context, errnum.OK, resultData)
+}
+
+
+/**
+ * @Author Evan
+ * @Description 用户删除某订单（真删）
+ * @Date 18:02 2020-11-16
+ * @Param
+ * @return
+ **/
+func DeleteUserOrderTel(context *gin.Context)  {
+	// post参数解析
+	// todo defer RecoverError
+	type PostParams struct {
+		OrderId int `json:"order_id"`
+	}
+	postParams := &PostParams{}
+	if err := context.BindJSON(&postParams); err != nil {
+		err = errnum.New(errnum.ErrParsingPostJson, err)
+		fmt.Println("err: " + err.Error())
+		handler.SendResponse(context, err, nil)
+		return
+	}
+	userId := context.GetHeader("X-User-Id")
+	userIdInt, _ := strconv.Atoi(userId)
+
+	resultData, err := order.DeleteUserOrderTel(postParams.OrderId, userIdInt)
+	if err != nil {
+		handler.SendResponse(context, err, nil)
+		return
+	}
+	handler.SendResponse(context, errnum.OK, resultData)
 }
