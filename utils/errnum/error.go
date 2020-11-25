@@ -14,13 +14,14 @@ var (
 	RemainingNotEnough  = &Er{Code: 40007, Message: "Remaining Not Enough"}
 	UserAlreadyVip      = &Er{Code: 40008, Message: "User Already Vip"}
 	ErrParsingPostJson  = &Er{Code: 40009, Message: "ErrParsingPostJson"}
-
+	ErrNoAuth           = &Er{Code: 40010, Message: "No Auth"}
 	// login
 	ErrTokenNotExist = &Er{Code: 50100, Message: "token not exist"}
 
 	// order
 	ErrTelOrderChanceInsufficient = &Er{Code: 50200, Message:"Tel Order Chance Insufficient"}
 	ErrOrderNotFound = &Er{Code: 50201, Message:"Order Not Found"}
+
 
 	// Continue add err types ...
 )

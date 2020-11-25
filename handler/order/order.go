@@ -3,6 +3,7 @@ package order
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"strconv"
 	"wumingtianqi/handler"
 	"wumingtianqi/libs/order"
@@ -92,6 +93,42 @@ func DeleteUserOrderTel(context *gin.Context)  {
 	userIdInt, _ := strconv.Atoi(userId)
 
 	resultData, err := order.DeleteUserOrderTel(postParams.OrderId, userIdInt)
+	if err != nil {
+		handler.SendResponse(context, err, nil)
+		return
+	}
+	handler.SendResponse(context, errnum.OK, resultData)
+}
+
+/**
+ * @Author Evan
+ * @Description
+ * @Date 21:41 2020-11-25
+ * @Param
+ * @return
+ **/
+func UpdateUserOrderTel(context *gin.Context) {
+	// post参数解析
+	//type PostParams struct {
+	//	OrderId
+	//	PreTele     string                       `json:"pre_tele"`
+	//	Telephone   string                       `json:"telephone"`
+	//	City        string                       `json:"city"`
+	//	RemindTime  string                       `json:"remind_time"`
+	//	OrderDetail []orderModel.OrderDetailItem `json:"order_detail"`
+	//}
+	postParams := &orderModel.ResOrderAndDetail{}
+	if err := context.BindJSON(&postParams); err != nil {
+		err = errnum.New(errnum.ErrParsingPostJson, err)
+		log.Print("err: " + err.Error())
+		log.Println("err: " + err.Error())
+		handler.SendResponse(context, err, nil)
+		return
+	}
+	log.Println("postParmas", postParams)
+	userId := context.GetHeader("X-User-Id")
+	userIdInt, _ := strconv.Atoi(userId)
+	resultData, err := order.UpdateUserOrderTel(*postParams, userIdInt)
 	if err != nil {
 		handler.SendResponse(context, err, nil)
 		return

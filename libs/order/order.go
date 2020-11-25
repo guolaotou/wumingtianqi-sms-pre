@@ -356,6 +356,7 @@ step4 事务：order表、order_detail表、user_info_flexible表同时更新
  **/
 func AddUserOrderTel(userId int, preTele string, telephone string, city string, remindTime string,
 	orderDetail []orderModel.OrderDetailItem) (map[string]interface{}, error){
+	// todo 判断今天是否还有新增/编辑的次数，最后新建成功后要再将次数减一
 	// step1 params校验：手机号、城市校验、提醒时间校验，提醒权限校验
 	// step2 获取用户当前可配置的手机号订单数量，若不够，直接返回报错
 	userInfoFlexibleModel := &user.UserInfoFlexible{}
@@ -366,8 +367,6 @@ func AddUserOrderTel(userId int, preTele string, telephone string, city string, 
 	} else if !has {
 		println("user_info_flexible model not exist")
 		return nil, errors.New("user_info_flexible model not exist")
-	} else {
-		println("model: ", userInfoFlexibleModel)
 	}
 	telOrderRemaining := userInfoFlexibleModel.TelOrderRemaining
 	if telOrderRemaining <= 0 {
@@ -426,7 +425,7 @@ func AddUserOrderTel(userId int, preTele string, telephone string, city string, 
 		_ = orderModelToAdd.Delete()  // todo未来可以考虑在这里加上err，并且加上log，打上断点
 		return nil, err
 	}
-	resultData := map[string]interface{}{
+	resultData := map[string]interface{} {
 		"result": "success",
 	}
 	return resultData, nil
@@ -484,47 +483,110 @@ func GetUserOrderTel(userId int) (map[string]interface{}, error){
 	return resultData, nil
 }
 
-// todo 改
-//func UpdateUserOrderTel(resOrderAndDetail orderModel.ResOrderAndDetail, userId int) (map[string]interface{}, error) {
-//	// todo 添加注释？
-//	/*
-//	step1 根据order_id 查该order信息，判断该order是否属于该用户；若属于才进行下一步
-//	step2 参数校验
-//	step3 修改该order信息，提交
-//	step4 返回
-//	 */
-//	// todo 之后和AddUserOrderTel尝试合并（两个表的增加部分合并；更改前做md5校验，前后的订单信息做md5，若无变化则不改）
-//	// step1 根据order_id 查该order信息，判断该order是否属于该用户
-//	orderModelInstance := orderModel.Order{}
-//	theOrderModel, has, err := orderModelInstance.QueryOneByOrderId()
-//	if err != nil {
-//		err = errnum.New(errnum.DbError, err)
-//		// todo log
-//		return nil, err
-//	} else if !has {
-//		err = errnum.New(errnum.ErrOrderNotFound, nil)
-//	}
-//	// step1.2 再查出来flexible相关的数据
-//	//os.Exit()
-//	// step2 参数校验 todo
-//
-//	// step3 修改该order信息
-//	// todo md5校验？ 两个表？
-//	currentTime := time.Now()
-//	theOrderModel.RemindCity = resOrderAndDetail.City
-//	theOrderModel.RemindTime = resOrderAndDetail.RemindTime
-//	theOrderModel.TelephoneNum = resOrderAndDetail.Telephone  // todo 手机号改好
-//	theOrderModel.UpdateTime = currentTime
-//	err = theOrderModel.Update()
-//	if err != nil {
-//		err = errnum.New(errnum.DbError, nil)
-//		return nil, err
-//	}
-//	// md5
-//
-//
-//	return nil, nil
-//}
+func UpdateUserOrderTel(resOrderAndDetail orderModel.ResOrderAndDetail, userId int) (map[string]interface{}, error) {
+	/*
+	step1 判断用户今天是否还有编辑的次数
+	step2 根据order_id 查该order信息，判断该order是否属于该用户；若属于才进行下一步
+	step3 参数校验
+	step4 事务：修改order，删除旧order_detail，新增新order_detail，提交
+	step5 返回
+	 */
+	// todo 之后和AddUserOrderTel尝试合并（两个表的增加部分合并；更改前做md5校验，前后的订单信息做md5，若无变化则不改）
+	// step1 判断用户今天是否还有编辑的次数
+	userInfoFlexibleModel := &user.UserInfoFlexible{}
+	userInfoFlexibleModel, has, err := userInfoFlexibleModel.QueryByUserId(userId)
+	if err != nil {
+		println("get user_info_flexible model error: ", err.Error())
+		return nil , err
+	} else if !has {
+		println("user_info_flexible model not exist")
+		return nil, errors.New("user_info_flexible model not exist")
+	}
+	telOrderRemaining := userInfoFlexibleModel.TelOrderRemaining
+	if telOrderRemaining <= 0 {
+		err = errnum.New(errnum.ErrTelOrderChanceInsufficient, nil)
+		return nil, err
+	}
+	// step2 根据order_id 查该order信息，判断该order是否属于该用户
+	orderId := resOrderAndDetail.OrderId
+	orderModelInstance := orderModel.Order{}
+	theOrderModel, has, err := orderModelInstance.QueryOneByOrderId(orderId)
+	if err != nil {
+		err = errnum.New(errnum.DbError, err)
+		log.Println("err: " + err.Error())
+		return nil, err
+	} else if !has {
+		err = errnum.New(errnum.ErrOrderNotFound, nil)
+		log.Println("err: " + err.Error())
+		return nil, err
+	}
+	if userId != theOrderModel.Creator {
+		err = errnum.New(errnum.ErrNoAuth, nil)
+		log.Println("err: " + err.Error())
+		return nil, err
+	}
+
+	// step3 参数校验 todo
+
+	// step4 事务：修改order，删除旧order_detail，新增新order_detail，提交
+	session := common.Engine.NewSession()
+	defer session.Close()
+	if session.Begin() != nil {  // 事务开启
+		err = errnum.New(errnum.DbError, nil)
+		log.Println("err: " + err.Error())
+		return nil, err
+	}
+	currentTime := time.Now()
+	// 4.1 order表修改
+	theOrderModel.RemindCity = resOrderAndDetail.City
+	theOrderModel.RemindTime = resOrderAndDetail.RemindTime
+	theOrderModel.TelephoneNum = resOrderAndDetail.PreTele + resOrderAndDetail.Telephone
+	theOrderModel.UpdateTime = currentTime
+	if _, err = session.AllCols().Where("order_id=?", orderId).Update(*theOrderModel); err != nil {
+		err = errnum.New(errnum.DbError, err)
+		return nil, err
+	}
+
+	// 4.2 旧order_detail删除
+	_, err = session.Where("order_id=?", orderId).Delete(orderModel.OrderDetail{})
+	if err != nil {
+		err = errnum.New(errnum.DbError, nil)
+		log.Println("err: " + err.Error())
+		return nil, err
+	}
+
+	// 4.3 新order_detail新增
+	for _, orderDetailItem := range resOrderAndDetail.OrderDetail {
+		orderDetailModelToAdd := &orderModel.OrderDetail{
+			OrderId:         orderId,
+			RemindPatternId: orderDetailItem.RemindPatternId,
+			Value:           orderDetailItem.Value,
+			CreateTime:      currentTime,
+			UpdateTime:      currentTime,
+		}
+		if _, err = session.InsertOne(orderDetailModelToAdd); err != nil {
+			err = errnum.New(errnum.DbError, nil)
+			return nil, err
+		}
+	}
+
+	// 4.4 更新userInfoFlexibleModel
+	userInfoFlexibleModel.TelOrderRemaining -= 1
+	userInfoFlexibleModel.TodayEditChanceRemaining -= 1
+	if _, err = session.AllCols().Where("user_id=?", userId).Update(*userInfoFlexibleModel); err != nil {
+		err = errnum.New(errnum.DbError, err)
+		return nil, err
+	}
+
+	if err = session.Commit(); err != nil {
+		err = errnum.New(errnum.DbError, err)
+		_ = session.Rollback()
+	}
+	resultData := map[string]interface{} {
+		"result": "success",
+	}
+	return resultData, nil
+}
 
 
 /**
@@ -550,6 +612,13 @@ func DeleteUserOrderTel(orderId int, userId int) (map[string]interface{}, error)
 		return nil, err
 	}
 
+	// 待删除订单不是本人创建
+	if userId != theOrderModel.Creator {
+		err = errnum.New(errnum.ErrNoAuth, nil)
+		log.Println("err: " + err.Error())
+		return nil, err
+	}
+
 	// delete
 	// 事务：order和order_detail一起删除
 	session := common.Engine.NewSession()
@@ -565,6 +634,7 @@ func DeleteUserOrderTel(orderId int, userId int) (map[string]interface{}, error)
 	}
 	_, err = session.Where("order_id=?", orderId).Delete(orderModel.OrderDetail{})
 	if err != nil {
+		err = errnum.New(errnum.DbError, nil)
 		log.Println("err: " + err.Error())
 		return nil, err
 	}
