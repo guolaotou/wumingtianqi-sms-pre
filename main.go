@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"wumingtianqi/config"
 	"wumingtianqi/model"
 	"wumingtianqi/model/city"
@@ -12,6 +13,7 @@ import (
 
 // go run main.go
 func main() {
+	log.SetFlags(log.Ldate|log.Llongfile)
 	cfg, _ := config.LoadConfig()
 	fmt.Println(cfg.Log)
 	model.InitMysql()

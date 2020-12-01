@@ -2,6 +2,8 @@ package wx
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
+
 	//"nevermore/log"
 	"wumingtianqi/handler"
 	"wumingtianqi/libs/wx"
@@ -22,8 +24,9 @@ func WxLogin (context *gin.Context){
 		return
 	}
 	res, err := wx.WxLogin(wechatCode)  // lib函数
+	log.Println("res", res)
 	if err != nil {
-		//log.L().Error(err.Error())  // todo 以后再封装log模块
+		log.Println(err.Error())
 		handler.SendResponse(context, err, nil)
 		return
 	}

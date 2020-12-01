@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -22,7 +23,7 @@ func WxLogin(wechatCode string) (map[string]interface{}, error) {
 	*/
 	// step 1： 获取用户open_id
 	openId, sessionKey, err := GetUserOpenId(wechatCode)
-	fmt.Println("openId",openId, "sessionKey: ", sessionKey)
+	log.Println("openId",openId, "sessionKey: ", sessionKey)
 	if err != nil {
 		return nil, err
 	}
@@ -31,21 +32,29 @@ func WxLogin(wechatCode string) (map[string]interface{}, error) {
 	u := new(user.UserInfo)
 	u, has, err := u.QueryByOpenId(openId)
 
+	currentTime := time.Now()
 	if err != nil {
 		err = errnum.New(errnum.DbError, nil)
+		log.Println("openId",openId, "sessionKey: ", sessionKey)
 		return nil, err
-	} else if has == false {
-		// 新建
-		currentTime := time.Now()
+	} else if has == false {  // 用户不存在 新建
 		u.WxOpenId = openId
 		u.WxUnionId = ""
 		u.UserToken = sessionKey
 		u.CreateTime = currentTime
 		u.UpdateTime = currentTime
 		if err := u.Create(); err != nil {
-			err = errnum.New(errnum.DbError, errors.New("create sql error"))
+			err = errnum.New(errnum.DbError, err)
+			log.Println(err.Error())
 			return nil, err
 		}
+	}
+	u.UserToken = sessionKey
+	u.UpdateTime = currentTime
+	if err := u.Update(); err != nil {
+		err = errnum.New(errnum.DbError, err)
+		log.Println(err.Error())
+		return nil, err
 	}
 
 	// 返回UserToken
@@ -78,15 +87,18 @@ func GetUserOpenId(wechatCode string) (string, string, error) {
 	// 错误处理 todo 日后可以封装
 	if err != nil {
 		err = errnum.New(errnum.WxError, err)
+		log.Println(err.Error())
 		// todo 封装 log
 		return "", "", err
 	} else if resp == nil {
 		err = errnum.New(errnum.WxError, errors.New("resp is None"))
+		log.Println(err.Error())
 		return "", "", err
 	}
 	code := resp.StatusCode
 	if code != 200 {
 		err = errnum.New(errnum.WxError, errors.New("Http error code: " + strconv.Itoa(code)))
+		log.Println(err.Error())
 		return "", "", err
 	}
 	defer resp.Body.Close()
@@ -96,10 +108,12 @@ func GetUserOpenId(wechatCode string) (string, string, error) {
 	err = json.Unmarshal(body, &resultData)
 	if err != nil {
 		err = errnum.New(errnum.WxError, errors.New("body unmarshal error"))
+		log.Println(err.Error())
 		return "", "", err
 	}
 	// 真正开始解析返回值
 	// 1. 错误 {"errcode":40029,"errmsg":"invalid code, hints: [ req_id: zhBes.5ce-2V7a_ ]"}
+	log.Println("resultData", resultData)
 	errCode := resultData["errcode"]
 	if errCode != nil {
 		errMsg := resultData["errmsg"]
@@ -108,6 +122,7 @@ func GetUserOpenId(wechatCode string) (string, string, error) {
 			errMsgStr = errMsg.(string)
 		}
 		err = errnum.New(errnum.WxError, errors.New(fmt.Sprintf("Wx error code: %.f; Wx error desc: %s", errCode.(float64), errMsgStr)))
+		log.Println(err.Error())
 		return "", "", err
 	}
 
@@ -117,6 +132,7 @@ func GetUserOpenId(wechatCode string) (string, string, error) {
 	sessionKey := resultData["session_key"]
 	if openId == nil || sessionKey == nil {
 		err = errnum.New(errnum.WxError, errors.New("body unmarshal error open_id"))
+		log.Println(err.Error())
 		return "", "", err
 	}
 	openIdStr := openId.(string)
