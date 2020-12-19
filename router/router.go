@@ -14,6 +14,8 @@ func InitRouter(router *gin.Engine) {
 	//router.POST("/wx/login", wx.WxLogin)
 	router.GET("/wx/login", wx.WxLogin)
 
+	// user
+	router.GET("/v1/user/info", middleware.TokenParsing, user.GetUserInfo) // 获取用户信息
 	router.POST("/v1/invitation/reward/get", middleware.TokenParsing, user.GetInvitationReward) // 邀请码获取奖励
 
 	// 手机号订单

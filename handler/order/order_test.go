@@ -80,7 +80,7 @@ func TestAddUserOrderTel(t *testing.T) {
 
 
 // go clean -testcache && go test -v handler/order/order_test.go -test.run TestGetUserOrderTel
-// 测试之前先运行项目: go run main
+// 测试之前先运行项目: go run main.go
 func TestGetUserOrderTel(t *testing.T) {
 	test.Setup()
 	webConfig := config.GlobalConfig.Web

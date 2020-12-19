@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	"fmt"
+	"log"
 	"wumingtianqi/model/common"
 	"wumingtianqi/model/user"
 	"wumingtianqi/utils"
@@ -24,11 +25,12 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 	// step1
 	invitationModel := &user.Invitation{}
 	invitationModel, has, err := invitationModel.QueryByInvitationCode(invitationCode)
-	if err != nil{
-		println("QueryByInvitationCode error")
+	if err != nil {
+		err = errnum.New(errnum.DbError, err)
+		log.Println("QueryByInvitationCode  err: " + err.Error())
 		return nil, err
 	} else if !has {
-		println("QueryByInvitationCode not found")
+		log.Println("QueryByInvitationCode not found")
 		return nil, errors.New("QueryByInvitationCode not found")
 	}
 	invitationVipLevel := invitationModel.Vip
