@@ -1,6 +1,9 @@
 main:
   sqldb:
-    url: "www.baidu.com"
-    lala:
-      - 1
-      - 2
+    DIALECT: "mysql"
+    ENGINE: "pymysql"
+    DBNAME: "wumingtianqi"
+    USER: "root"
+    PASSWORD: "xxxxxx"
+    HOST: '0.0.0.0'
+    PORT: 3306

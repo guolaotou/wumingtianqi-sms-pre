@@ -17,7 +17,7 @@ import (
 func WxLogin(wechatCode string) (map[string]interface{}, error) {
 	/* 对应API：用户微信登录
 		1.jscode -> open_id
-		2.查数据库user_info表，查该open_id是否有对应model
+		2.该open_id是否查数据库user_info表，查有对应model
 		2.1 若有，直接返回id；
 		2.2 若没有，则新建model，返回id
 	*/
@@ -38,12 +38,36 @@ func WxLogin(wechatCode string) (map[string]interface{}, error) {
 		log.Println("openId",openId, "sessionKey: ", sessionKey)
 		return nil, err
 	} else if has == false {  // 用户不存在 新建
+		// 1. 新建user_info表
+		log.Println("New user-------")
 		u.WxOpenId = openId
 		u.WxUnionId = ""
 		u.UserToken = sessionKey
 		u.CreateTime = currentTime
 		u.UpdateTime = currentTime
 		if err := u.Create(); err != nil {
+			err = errnum.New(errnum.DbError, err)
+			log.Println(err.Error())
+			return nil, err
+		}
+
+		// 2. 新建user_info_flexible表
+		userInfoFlexible := &user.UserInfoFlexible{
+			UserId:                   u.Id,
+			InvitationCode:           "",
+			VipLevel:                 0,
+			WechatOrderRemaining:     0,
+			TelOrderRemaining:        0,
+			TodayEditChanceRemaining: 0,
+			Coin:                     0,
+			Diamond:                  0,
+			ExpirationTime:           0,
+			Creator:                  -1,
+			CreateTime:               time.Now(),
+			UpdateTime:               time.Now(),
+		}
+		err = userInfoFlexible.Create()
+		if err != nil {
 			err = errnum.New(errnum.DbError, err)
 			log.Println(err.Error())
 			return nil, err

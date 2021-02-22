@@ -16,3 +16,12 @@ func TestWeather(t *testing.T) {
 
 	weather.UpdateWeatherDaily()
 }
+
+// go clean -testcache & go test -v libs/weather/weather_test.go -test.run TestCity
+func TestCity(t *testing.T) {
+	test.Setup()
+	_, err := weather.GetCityList()
+	if err != nil {
+		println("err", err.Error())
+	}
+}

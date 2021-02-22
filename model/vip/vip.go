@@ -42,3 +42,8 @@ func (m *VipRightsMap) QueryById(id int) (*VipRightsMap, bool, error) {
 	has, err := common.Engine.Where("id=?", id).Get(m)
 	return m, has, err
 }
+
+func (m * VipRightsMap) QueryByVipLevel(vipLevel int) (*VipRightsMap, bool, error){
+	has, err := common.Engine.Where("vip_level=?", vipLevel).Get(m)
+	return m, has, err
+}

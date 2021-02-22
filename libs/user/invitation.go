@@ -6,6 +6,7 @@ import (
 	"log"
 	"wumingtianqi/model/common"
 	"wumingtianqi/model/user"
+	"wumingtianqi/model/vip"
 	"wumingtianqi/utils"
 	"wumingtianqi/utils/errnum"
 )
@@ -36,14 +37,14 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 	invitationVipLevel := invitationModel.Vip
 	duration := invitationModel.Duration
 	timesRemaining := invitationModel.TimesRemaining
-	println("timesRemaining", timesRemaining)
+	log.Println("timesRemaining", timesRemaining)
 	coin := invitationModel.Coin
 	diamond := invitationModel.Diamond
 
-	//if timesRemaining <= 0 {
-	//	err = errnum.New(errnum.RemainingNotEnough, errors.New("RemainingNotEnough"))
-	//	return nil, err
-	//}
+	if timesRemaining <= 0 {  // 邀请码的次数已被用完
+		err = errnum.New(errnum.RemainingNotEnough, errors.New("RemainingNotEnough"))
+		return nil, err
+	}
 
 	// step2
 	userInfoFlexibleModel := &user.UserInfoFlexible{}
@@ -58,7 +59,7 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 		println("model: ", userInfoFlexibleModel)
 	}
 	userVipLevel := userInfoFlexibleModel.VipLevel
-	if userVipLevel >= utils.VIP1 && userVipLevel != invitationVipLevel {
+	if userVipLevel >= utils.VIP1 && userVipLevel != invitationVipLevel {  // 用户当前已经是VIP，但非该邀请码对应VIP等级，则报错
 		err = errnum.New(errnum.UserAlreadyVip, nil)
 		return nil, err
 	}
@@ -74,8 +75,27 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 	// 过期时间顺延
 	userInfoFlexibleModel.ExpirationTime = utils.AddSpecificDays8Int(userInfoFlexibleModel.ExpirationTime, duration)
 	userInfoFlexibleModel.InvitationCode = invitationCode
-	invitationModel.TimesRemaining -= 1
+	vipRightsMap := &vip.VipRightsMap{}
+	vipRightsMap, has, err = vipRightsMap.QueryByVipLevel(userVipLevel)
+	if err != nil {
+		err = errnum.New(errnum.DbError, err)
+		log.Println("QueryByVipLevel err:", err.Error())
+		return nil, err
+	} else if !has {
+		log.Println("QueryByVipLevel not found")
+		return nil, errors.New("QueryByVipLevel not found")
+	}
+	// 解析出vip表的权益，赋予用户
+	wechatOrderMax := vipRightsMap.WechatOrderMax
+	telOrderMax := vipRightsMap.TelOrderMax
+	todayEditChanceMax := vipRightsMap.TodayEditChanceMax  // 20210216Now 改方案：加入待提醒队列的时候，用户今日可提醒次数减一；最大提醒次数为一天可配置次数
+	_ = vipRightsMap.RemindPatternIdList  // 暂时前端写死
+	// 赋予用户  // todo 部署后试试？
+	userInfoFlexibleModel.WechatOrderRemaining = wechatOrderMax
+	userInfoFlexibleModel.TelOrderRemaining = telOrderMax
+	userInfoFlexibleModel.TodayEditChanceRemaining = todayEditChanceMax  // todo 去掉todayEditChanceMax
 
+	invitationModel.TimesRemaining -= 1
 	// step4 事务：锁该邀请码（暂时用update where的方法做），以上表执行事务（这里是重点，未来做好并发控制）
 	// todo 未来压测这里
 	session := common.Engine.NewSession()
@@ -90,6 +110,7 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 			"times_remaining>=1").Update(*invitationModel)
 	if rowsAffected <= 0 {
 		err = errnum.New(errnum.RemainingNotEnough, errors.New("concurrent error"))
+		log.Println("rowsAffected", err.Error())
 		return nil, err
 	}
 	if err != nil {

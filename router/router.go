@@ -5,6 +5,7 @@ import (
 	"wumingtianqi/handler/order"
 	"wumingtianqi/handler/user"
 	"wumingtianqi/handler/wx"
+	"wumingtianqi/handler/weather"
 	"wumingtianqi/router/middleware"
 )
 
@@ -23,4 +24,7 @@ func InitRouter(router *gin.Engine) {
 	router.GET("/v1/user/order/tel/get", middleware.TokenParsing, order.GetUserOrderTel)
 	router.POST("/v1/user/order/tel/delete", middleware.TokenParsing, order.DeleteUserOrderTel)
 	router.POST("/v1/user/order/tel/update", middleware.TokenParsing, order.UpdateUserOrderTel)
+
+	// city
+	router.GET("/v1/weather/city/get", middleware.TokenParsing, weather.GetCityList)
 }

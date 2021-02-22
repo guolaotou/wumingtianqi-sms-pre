@@ -15,6 +15,14 @@
 go run main.go
 ```
 
+
+## 打包
+1. 包需要在mac上运行
+    export CGO_ENABLED=0 && export GOOS=darwin && export GOARCH=amd64 && go build -o wumingtianqi.out -v wumingtianqi
+
+2. 包需要再linux上运行
+	export CGO_ENABLED=0 && export GOOS=linux && export GOARCH=amd64 && go build -o wumingtianqi.out -v wumingtianqi
+
 ## 加速测试方法
 mac系统，项目目录下运行加速系统时间的脚本
 ```shell script

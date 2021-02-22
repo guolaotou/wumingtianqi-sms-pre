@@ -2,6 +2,7 @@ package web
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"wumingtianqi/config"
 	"wumingtianqi/router"
 )
@@ -20,6 +21,7 @@ func ListenHttp() {
 	port := config.GlobalConfig.Web.Port
 	err := app.Run(":" + port)
 	if err != nil {
-		//log.L().Error("Failed to start web server")
+		log.Println("Failed to start web server")
+		log.Println(err.Error())
 	}
 }

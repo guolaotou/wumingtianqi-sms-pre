@@ -1,6 +1,7 @@
 package weather
 
 import (
+	"errors"
 	"fmt"
 	"github.com/intel-go/fastjson"
 	"io/ioutil"
@@ -15,6 +16,7 @@ import (
 	"wumingtianqi/model/common"
 	"wumingtianqi/model/weather"
 	"wumingtianqi/utils"
+	"wumingtianqi/utils/errnum"
 )
 
 // 根据指定城市，获取新知天气信息
@@ -380,6 +382,123 @@ func UpdateWeatherDaily() {
 
 		time.Sleep(6 * time.Second)  // 先这样写，以后优化？
 	}
+}
+
+/**
+ * @Author Evan
+ * @Description 获取城市列表
+	tips （json格式化两个空格 https://tw.piliapp.com/json/formatter/）
+	1.遍历数据库中按行存储的城市数据，首先转换成map嵌套格式，如下
+	{
+	  "北京市": {
+		"北京市": {
+		  "海淀区": "Haidian"
+		}
+	  },
+	  "河北省": {
+		"石家庄市": {
+		  "长安区": "Changan"
+		}
+	  }
+	}
+	2.遍历上面map，得到list map的嵌套格式
+	[
+	  {
+		"name": "北京市",
+		"childs": [
+		  {
+			"name": "北京市",
+			"childs": [
+			  {
+				"name": "海淀区",
+				"pinyin": "haidian"
+			  }
+			]
+		  }
+		]
+	  },
+	  {
+		"name": "河北省",
+		"childs": [
+		  {
+			"name": "石家庄市",
+			"childs": [
+			  {
+				"name": "长安区",
+				"pinyin": "Changan"
+			  }
+			]
+		  }
+		]
+	  }
+	]
+
+ * @Date 21:12 2021-02-19
+ * @Param
+ * @return
+ **/
+func GetCityList() ([]ProvinceItem, error) {
+	// 读取city数据库
+	cityListFromDb, err := city.GetAllCity()
+	if err != nil {
+		err = errnum.New(errnum.DbError, err)
+		log.Println("GetAllCity err:", err.Error())
+		return nil, err
+	}
+	if cityListFromDb == nil {
+		return nil, errors.New("no cities")
+	}
+
+	// step1
+	citiesMap := make(map[string]map[string]map[string]string, 0)
+	for i := 0; i < len(cityListFromDb); i++ {
+		province := cityListFromDb[i].Province
+		cityValue := cityListFromDb[i].City
+		district := cityListFromDb[i].District
+		pinYin := cityListFromDb[i].PinYin
+
+		if _, ok := citiesMap[province]; !ok {
+			citiesMap[province] = make(map[string]map[string]string, 0)
+		}
+		if _, ok := citiesMap[province][cityValue]; !ok {
+			citiesMap[province][cityValue] = make(map[string]string, 0)
+		}
+		citiesMap[province][cityValue][district] = pinYin
+	}
+
+	// step2
+	ProvinceList := make([]ProvinceItem, 0)  // 最后要的结果
+	for provinceName, provinceChildsValue := range citiesMap {
+		// 最外面一层，这里是一个新的省份，初始化
+		provinceChildsList := make([]ProvinceChildItem, 0)
+
+		for cityName, cityChildsValue := range provinceChildsValue {
+			// 一个新的市，初始化
+			cityChildsList := make([]CityChildItem, 0)
+
+			for districtName, pinYin := range cityChildsValue {
+				cityChildsList = append(cityChildsList, CityChildItem{
+					Name:   districtName,
+					PinYin: pinYin,
+				})
+			}
+			provinceChildsList = append(provinceChildsList, ProvinceChildItem{
+				Name:  cityName,
+				Childs: cityChildsList,
+			})
+		}
+		ProvinceList = append(ProvinceList, ProvinceItem{
+			Name:   provinceName,
+			Childs: provinceChildsList,
+		})
+	}
+	//jsons, errs := json.Marshal(ProvinceList[0]) //转换成JSON返回的是byte[]
+	//if errs != nil {
+	//	fmt.Println(errs.Error())
+	//}
+	//fmt.Println(string(jsons)) //byte[]转换成string 输出
+
+	return ProvinceList, nil
 }
 
 

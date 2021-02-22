@@ -53,3 +53,18 @@ type XinZhiWeatherDailyItem struct {
 //	WindScale           int    `json:"wind_scale"`
 //	Humidity            int    `json:"humidity"`
 //}
+
+// 城市拼接用
+type CityChildItem struct {
+	Name   string `json:"name"`
+	PinYin string `json:"pin_yin"`
+}
+type ProvinceChildItem struct {
+	Name  string `json:"name"`
+	Childs []CityChildItem `json:"childs"`
+}
+type ProvinceItem struct {
+	Name   string              `json:"name"`
+	Childs []ProvinceChildItem `json:"childs"`
+}
+// 城市拼接用 end

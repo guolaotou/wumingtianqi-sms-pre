@@ -5,7 +5,6 @@ import (
 	"log"
 	"wumingtianqi/config"
 	"wumingtianqi/model"
-	"wumingtianqi/model/city"
 	"wumingtianqi/web"
 
 	//"github.com/lithammer/shortuuid/v3"
@@ -13,19 +12,16 @@ import (
 
 // go run main.go
 func main() {
-	log.SetFlags(log.Ldate|log.Llongfile)
+	log.SetFlags(log.Ldate|log.Ltime|log.Llongfile)
 	cfg, _ := config.LoadConfig()
 	fmt.Println(cfg.Log)
 	model.InitMysql()
 	model.InitPubSub()
-	cityModel, err := city.GetAllCity()
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	fmt.Println("cityModel", cityModel)
+	log.Println("init finished")
 
 	// 业务开始
 	web.ListenHttp()
+	log.Println("web started")
 	//_ := shortuuid.New() // Cekw67uyMpBGZLRP2HFVbe
 
 	select {}
