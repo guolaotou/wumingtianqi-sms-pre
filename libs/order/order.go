@@ -8,15 +8,16 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/robfig/cron"
 	"log"
-	"time"
-	"wumingtianqi/model/user"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 	"wumingtianqi/config"
 	"wumingtianqi/model/common"
 	orderModel "wumingtianqi/model/order"
 	"wumingtianqi/model/remind"
+	"wumingtianqi/model/user"
+	userLib "wumingtianqi/libs/user"
 	weatherModel "wumingtianqi/model/weather"
 	"wumingtianqi/utils"
 	"wumingtianqi/utils/errnum"
@@ -27,7 +28,6 @@ import (
 // 中间处理过程比较麻烦？
 // 然后存到订单表
 
-// todo what I really want to do
 // 1. 把符合提醒要求的订单放到队列（生产者）
 // 1.1 拉取昨日，今日的天气表，存到map（以后做到缓存里）,涉及map？ 日后redis
 // 1.2 订单表拉取9:00的订单
@@ -39,7 +39,7 @@ import (
 type WeatherItem map[string]interface{}
 type Weather map[string]WeatherItem
 
-func FakeWeather() (Weather, Weather) {  // todo 之后把天气信息弄成真的，服务器装tmux跑数据
+func FakeWeather() (Weather, Weather) {  // 如果数据库中没有数据，可以用这里的假数据暂时测试
 	yesterdayWeather := Weather{
 		"Beijing": WeatherItem{
 			"city":      "Beijing",
@@ -59,10 +59,24 @@ func FakeWeather() (Weather, Weather) {  // todo 之后把天气信息弄成真�
 	return yesterdayWeather, todayWeather
 }
 
-func Weather2Map(city string) (Weather, Weather) {
+/**
+ * @Author Evan
+ * @Description 获取指定城市的昨天、今天的天气信息
+	（这个注释是后来加的）
+ * @Date 21:52 2021-02-23
+ * @Param
+ * @return
+ **/
+func Weather2Map(city string) (Weather, Weather, error) {
 	// 计算今日时间
 	yesterdayDate8Int := utils.GetSpecificDate8Int(0)  // todo 这个之后需要协调today和yestoday
-	yesterdayWeatherAll, _, _ := weatherModel.QueryByCityDate(city, yesterdayDate8Int)
+	yesterdayWeatherAll, has, err := weatherModel.QueryByCityDate(city, yesterdayDate8Int)
+	if err != nil {
+		err = errnum.New(errnum.DbError, nil)
+		return nil, nil, err
+	} else if !has {
+		return nil, nil, errors.New("no Weather data of yesterday")
+	}
 	yesterdayWeather := Weather{
 		city: WeatherItem{
 			"city": city,
@@ -73,7 +87,13 @@ func Weather2Map(city string) (Weather, Weather) {
 	}
 
 	todayDate8Int := utils.GetSpecificDate8Int(1)  // todo 这个之后需要协调today和yestoday
-	todayWeatherAll, _, _ := weatherModel.QueryByCityDate(city, todayDate8Int)
+	todayWeatherAll, has, err := weatherModel.QueryByCityDate(city, todayDate8Int)
+	if err != nil {
+		err = errnum.New(errnum.DbError, nil)
+		return nil, nil, err
+	} else if !has {
+		return nil, nil, errors.New("no Weather data of today")
+	}
 	todayWeather := Weather{
 		city: WeatherItem{
 			"city": city,
@@ -82,7 +102,7 @@ func Weather2Map(city string) (Weather, Weather) {
 			"high": todayWeatherAll.High,
 		},
 	}
-	return yesterdayWeather, todayWeather
+	return yesterdayWeather, todayWeather, nil
 }
 
 type SplicePatternModel struct {
@@ -90,45 +110,21 @@ type SplicePatternModel struct {
 	Priority          int    `json:"priority"`
 }
 
-//
-//func splicePattern1(city string, remindPattern *remind.RemindPattern) SplicePatternModel{
-//	// 1. 突然降雨
-//	// 枚举"天气现象"表，整理突然降雨的触发条件 ![1,2,3] -> [1,2,3]，考虑remind_pattern里新增一个extension字段（json格式），这个字段不同业务不一样，需要的东西也不一样。
-//	// 降雨对应的id todo 以后再弄个天气代码映射表？或者在某个地方弄个静态变量存
-//	RainPatternIds := []int{10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
-//
-//	var yesterdayWeather, todayWeather Weather
-//	if config.GlobalConfig.Weather.FakeData {
-//		yesterdayWeather, todayWeather = FakeWeather()
-//	} else {
-//		yesterdayWeather, todayWeather = Weather2Map(city)
-//	}
-//
-//	codeText := todayWeather[city]["code_text"].(string)
-//	codeYesterday := yesterdayWeather[city]["code_id"].(int)
-//	codeToday := todayWeather[city]["code_id"].(int)
-//	isYesRain, _ := utils.IsContain(codeYesterday, RainPatternIds)
-//	isTodayRain, _ := utils.IsContain(codeToday, RainPatternIds)
-//
-//	var pattern = new(SplicePatternModel)
-//	if !isYesRain && isTodayRain {
-//		pattern.RemindSplicedText = "有" + codeText + "记得带伞"  // 有阵雨 todo以后用format_text做通配，封装写法
-//		pattern.Priority = remindPattern.PriorityRemind
-//	}
-//	return *pattern
-//}
-
-func splicePattern1(city string, remindPattern *remind.RemindPattern) SplicePatternModel{
+func splicePattern1(city string, remindPattern *remind.RemindPattern) (SplicePatternModel, error){
 	// 1. 降水天气
 	// 枚举"天气现象"表，整理降水的所有情况 [1,2,3]，考虑remind_pattern里新增一个extension字段（json格式），这个字段不同业务不一样，需要的东西也不一样。
 	// 降雨对应的id todo 以后再弄个天气代码映射表？或者在某个地方弄个静态变量存
 	RainPatternIds := []int{10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
 
-	var  todayWeather Weather
+	var todayWeather Weather
+	var err error
 	if config.GlobalConfig.Weather.FakeData {
 		_, todayWeather = FakeWeather()
 	} else {
-		_, todayWeather = Weather2Map(city)
+		_, todayWeather, err = Weather2Map(city)
+		if err != nil {
+			return SplicePatternModel{}, err
+		}
 	}
 
 	codeText := todayWeather[city]["code_text"].(string)
@@ -140,17 +136,22 @@ func splicePattern1(city string, remindPattern *remind.RemindPattern) SplicePatt
 		pattern.RemindSplicedText = "有" + codeText + "记得带伞"  // 有阵雨 todo以后用format_text做通配，封装写法
 		pattern.Priority = remindPattern.PriorityRemind
 	}
-	return *pattern
+	return *pattern, nil
 }
 
-func splicePattern2(city string, remindPattern *remind.RemindPattern, value int) SplicePatternModel {
+func splicePattern2(city string, remindPattern *remind.RemindPattern, value int) (SplicePatternModel, error) {
 	// 2. 突然升温
 	var yesterdayWeather, todayWeather Weather
+	var err error
 	if config.GlobalConfig.Weather.FakeData {
 		yesterdayWeather, todayWeather = FakeWeather()
 	} else {
-		yesterdayWeather, todayWeather = Weather2Map(city)
+		yesterdayWeather, todayWeather, err = Weather2Map(city)
+		if err != nil {
+			return SplicePatternModel{}, err
+		}
 	}
+
 	highYesterday := yesterdayWeather[city]["high"].(int)
 	highToday := todayWeather[city]["high"].(int)
 	highTodayStr := strconv.Itoa(todayWeather[city]["high"].(int))
@@ -158,50 +159,56 @@ func splicePattern2(city string, remindPattern *remind.RemindPattern, value int)
 
 	var pattern = new(SplicePatternModel)
 	log.Println("highToday - highYesterday", highToday - highYesterday)
-	log.Println("valuevalue", value)
 	if highToday - highYesterday >= value {  // 最高气温较前一日增加5度，升至25度，注意防范
 		remindObject := remindPattern.RemindObject
 		pattern.RemindSplicedText = remindObject + "较前一日增加" + valueStr + "度，升至" + highTodayStr + "度，注意防范"
 		pattern.Priority = remindPattern.PriorityRemind
 	}
-	return *pattern
+	return *pattern, nil
 }
 
-func splicePattern3(city string, remindPattern *remind.RemindPattern, value int) SplicePatternModel {
+func splicePattern3(city string, remindPattern *remind.RemindPattern, value int) (SplicePatternModel, error) {
 	// 3. 突然降温
 	var yesterdayWeather, todayWeather Weather
+	var err error
 	if config.GlobalConfig.Weather.FakeData {
 		yesterdayWeather, todayWeather = FakeWeather()
 	} else {
-		yesterdayWeather, todayWeather = Weather2Map(city)
+		yesterdayWeather, todayWeather, err = Weather2Map(city)
+		if err != nil {
+			return SplicePatternModel{}, err
+		}
 	}
 	highYesterday := yesterdayWeather[city]["high"].(int)
 	highToday := todayWeather[city]["high"].(int)
 	highTodayStr := strconv.Itoa(todayWeather[city]["high"].(int))
-	valueStr := strconv.Itoa(highToday - highYesterday)
+	valueStr := strconv.Itoa(highYesterday - highToday)
 
 	var pattern = new(SplicePatternModel)
 	log.Println("highToday - highYesterday", highToday -highYesterday)
-	log.Println("valuevalue", value)
 	if highYesterday- highToday >= value {  // 最高气温较前一日降低5度，降到18度，注意防范
 		remindObject := remindPattern.RemindObject
 		pattern.RemindSplicedText = remindObject + "较前一日降低" + valueStr + "度，降至" + highTodayStr + "度，注意防范"
 		pattern.Priority = remindPattern.PriorityRemind
 	}
-	return *pattern
+	return *pattern, nil
 }
 
-func splicePattern8(city string, remindPattern *remind.RemindPattern) SplicePatternModel{
+func splicePattern8(city string, remindPattern *remind.RemindPattern) (SplicePatternModel, error){
 	// 8. 雨过天晴
 	// 枚举"天气现象"表，整理突然降雨的触发条件 ![1,2,3] -> [1,2,3]，考虑remind_pattern里新增一个extension字段（json格式），这个字段不同业务不一样，需要的东西也不一样。
 	// 降雨对应的id todo 以后再弄个天气代码映射表？或者在某个地方弄个静态变量存
 	RainPatternIds := []int{10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
 
 	var yesterdayWeather, todayWeather Weather
+	var err error
 	if config.GlobalConfig.Weather.FakeData {
 		yesterdayWeather, todayWeather = FakeWeather()
 	} else {
-		yesterdayWeather, todayWeather = Weather2Map(city)
+		yesterdayWeather, todayWeather, err = Weather2Map(city)
+		if err != nil {
+			return SplicePatternModel{}, err
+		}
 	}
 
 	codeText := todayWeather[city]["code_text"].(string)
@@ -215,75 +222,176 @@ func splicePattern8(city string, remindPattern *remind.RemindPattern) SplicePatt
 		pattern.RemindSplicedText = "没有降水啦！明天天气：" + codeText // 雨过天晴
 		pattern.Priority = remindPattern.PriorityRemind
 	}
-	return *pattern
+	return *pattern, nil
+}
+
+/**
+ * @Author Evan
+ * @Description 通知前预处理用户
+	1. 获取用户信息
+	2. vip等级过期处理
+	3. 剩余次数判断
+	todo 未来做vip提醒权限的判断：判断是否有该提醒的权限？
+ * @Date 20:58 2021-02-25
+ * @Param
+ * @return false 用户权限不足/处理失败，跳过通知; true 处理成功可以通知
+ **/
+func processBeforeNotify(userId int) (bool, error) {
+	// 1 获取用户信息
+	userInfoFlexibleModel := &user.UserInfoFlexible{}
+	userInfoFlexibleModel, has, err := userInfoFlexibleModel.QueryByUserId(userId)
+	if err != nil {
+		err = errnum.New(errnum.DbError, nil)
+		log.Println("get user_info_flexible model error: ", err.Error())
+		return false, err
+	} else if !has {
+		log.Println("user_info_flexible model not exist")
+		return false, errors.New("user_info_flexible model not exist")
+	}
+	// 2.vip等级过期判断
+	userInfoFlexibleModel, err = userLib.CheckVipExpiration(userInfoFlexibleModel)
+	if err != nil {
+		log.Println("err: ", err.Error())
+		return false, err
+	}
+
+	// 3. 剩余次数判断
+	if userInfoFlexibleModel.TelOrderRemaining <= 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
+
+func SpliceOrders(oneOrderModel orderModel.Order) ([]SplicePatternModel, error){
+	orderId := oneOrderModel.OrderId
+	city := oneOrderModel.RemindCity
+
+	// 根据order_id找到order_detail
+	orderDetail := orderModel.OrderDetail{}
+	orderDetailList, err := orderDetail.QueryListByOrderId(orderId)
+	if err != nil {
+		err = errnum.New(errnum.DbError, nil)
+		return nil, err
+	}
+
+	// 定义一个model，用来接单个提醒
+	patterns := make([]SplicePatternModel, 0)
+	for _, oneOrderDetailModel := range orderDetailList {
+		value := oneOrderDetailModel.Value
+
+		remindPattern := new(remind.RemindPattern)
+		remindPattern, _, _ = remindPattern.QueryOneById(oneOrderDetailModel.RemindPatternId)
+
+		switch oneOrderDetailModel.RemindPatternId {
+		case 1: // 突然降雨
+			pattern1, err := splicePattern1(city, remindPattern)
+			if err != nil {
+				log.Println("splicePattern1 err", err)
+				continue
+			}
+			if pattern1.Priority >= 1 {  // 以后可以用标准一点的用法
+				patterns = append(patterns, pattern1)
+			}
+		case 2: // 突然升温
+			pattern2, err := splicePattern2(city, remindPattern, value)
+			if err != nil {
+				log.Println("splicePattern2 err", err)
+			}
+			if pattern2.Priority >= 1 {  // 以后可以用标准一点的用法
+				patterns = append(patterns, pattern2)
+			}
+		case 3: // 突然降温
+			pattern3, err := splicePattern3(city, remindPattern, value)
+			if err != nil {
+				log.Println("splicePattern3 err", err)
+			}
+			if pattern3.Priority >= 1 {  // 以后可以用标准一点的用法
+				patterns = append(patterns, pattern3)
+			}
+		case 4: // 空气质量变差
+			//println(2)
+		case 5: // 9点突然升温
+			//println(2)
+		case 6: // 高温预警
+			//println(2)
+		case 7: // 低温预警
+			//println(2)
+		case 8: // 雨过天晴
+			pattern8, err := splicePattern8(city, remindPattern)
+			if err != nil {
+				log.Println("splicePattern8 err", err)
+			}
+			if pattern8.Priority >= 1 {  // 以后可以用标准一点的用法
+				patterns = append(patterns, pattern8)
+			}
+		}
+	}
+	sort.Slice(patterns, func(i, j int) bool {  // list内包含字典排序，参考https://stackoverflow.com/questions/28999735/what-is-the-shortest-way-to-simply-sort-an-array-of-structs-by-arbitrary-field
+		return patterns[i].Priority < patterns[j].Priority
+	})
+	return patterns, nil
 }
 
 // func2 拼接某时刻的所有订单的信息，每个订单多个提醒模式
-func SpliceOrders(time string) {
-	// 查询所有order表中时间等于0900的model，for这些model，判断model下是否至少有2个提醒条件满足；
+// todo 拆分函数： ProcessOrdersOfTime(预处理 + 调用SpliceOrders) + SpliceOrders
+func ProcessOrdersOfTime(time string) {
+	// 查询所有order表中时间等于0900的model，for这些model，判断model下是否至少有1个提醒条件满足；
 	// 若有，则拼接提醒用语，放到队列
 	// 以上操作可以考虑分批开goroutine
 	order := orderModel.Order{}
 	orderModelList, err := order.QueryListByTime(time)  // todo 测试：如果该时间下有脏数据，后面代码的健壮性
 	if err != nil {
-		panic(err)
+		log.Println(err.Error())
+		return
 	}
+	session := common.Engine.NewSession()
+	defer session.Close()
 	for _, oneOrderModel := range orderModelList {
-		orderId := oneOrderModel.OrderId
-		city := oneOrderModel.RemindCity
-
-		// 根据order_id找到order_detail
-		orderDetail := orderModel.OrderDetail{}
-		orderDetailList, err := orderDetail.QueryListByOrderId(orderId)
+		// 预处理用户，判断是否有权限发送订单
+		isAuth, err := processBeforeNotify(oneOrderModel.Creator)
+		log.Println("isAuth", isAuth)
+		log.Println("err", err)
 		if err != nil {
-			panic(err)
+			log.Println(err.Error())
+			continue
+		} else if !isAuth {
+			log.Println("User has no auth")
+			continue
 		}
 
-		// 定义一个model，用来接单个提醒
-		patterns := make([]SplicePatternModel, 0)
-		for _, oneOrderDetailModel := range orderDetailList {
-			value := oneOrderDetailModel.Value
-
-			remindPattern := new(remind.RemindPattern)
-			remindPattern, _, _ = remindPattern.QueryOneById(oneOrderDetailModel.RemindPatternId)
-
-			switch oneOrderDetailModel.RemindPatternId {
-			case 1: // 突然降雨
-				pattern1 := splicePattern1(city, remindPattern)
-				if pattern1.Priority >= 1 {  // 以后可以用标准一点的用法
-					patterns = append(patterns, pattern1)
-				}
-			case 2: // 突然升温
-				pattern2 := splicePattern2(city, remindPattern, value)
-				if pattern2.Priority >= 1 {  // 以后可以用标准一点的用法
-					patterns = append(patterns, pattern2)
-				}
-			case 3: // 突然降温
-				pattern3 := splicePattern3(city, remindPattern, value)
-				if pattern3.Priority >= 1 {  // 以后可以用标准一点的用法
-					patterns = append(patterns, pattern3)
-				}
-			case 4: // 空气质量变差
-				println(2)
-			case 5: // 9点突然升温
-				println(2)
-			case 6: // 高温预警
-				println(2)
-			case 7: // 低温预警
-				println(2)
-			case 8: // 雨过天晴
-				pattern8 := splicePattern8(city, remindPattern)
-				if pattern8.Priority >= 1 {  // 以后可以用标准一点的用法
-					patterns = append(patterns, pattern8)
-				}
-			}
+		patterns, err := SpliceOrders(oneOrderModel)
+		if err != nil {
+			log.Println(err.Error())
+			continue
 		}
-		sort.Slice(patterns, func(i, j int) bool {  // list内包含字典排序，参考https://stackoverflow.com/questions/28999735/what-is-the-shortest-way-to-simply-sort-an-array-of-structs-by-arbitrary-field
-			return patterns[i].Priority < patterns[j].Priority
-		})
+
 		// 拼接提醒用语，优先级，for循环后按照优先级排序，然后最终拼接用语，加到队列
 		// [[有阵雨, 1], [最高气温较前一日增加5度，升至25度，注意防范, 2]]
 		if len(patterns) >= 1{  // 需要提醒
+			// 先把提醒次数减一
+			userInfoFlexibleModel := &user.UserInfoFlexible{}
+			userInfoFlexibleModel, has, err := userInfoFlexibleModel.QueryByUserId(oneOrderModel.Creator)
+			if err != nil {
+				err = errnum.New(errnum.DbError, nil)
+				log.Println("get user_info_flexible model error: ", err.Error())
+				continue
+			} else if !has {
+				log.Println("user_info_flexible model not exist")
+				continue
+			}
+			userInfoFlexibleModel.TodayTelRemindRemaining -= 1
+			rowsAffected, err := session.AllCols().Where(
+				"user_id=?", oneOrderModel.Creator).And(
+				"today_tel_remind_remaining>=1").Update(*userInfoFlexibleModel)
+			if err != nil {
+				log.Println(err.Error())
+			}
+			if rowsAffected <= 0 {
+				// 并发的时候，该用户的其他订单已经触发了提醒，并将提醒次数用尽
+				log.Println("No enough today_tel_remind_remaining")
+				continue
+			}
 			var tips string
 			for _, pattern := range patterns {
 				if tips == "" {
@@ -294,7 +402,7 @@ func SpliceOrders(time string) {
 			}
 			needToRemindOrder := common.NeedToRemindOrder{
 				//SubscriberId: oneOrderModel.UserId,
-				City:           city,
+				City:           oneOrderModel.RemindCity,
 				SubscriberName: oneOrderModel.SubscriberName,
 				TelephoneNum:   oneOrderModel.TelephoneNum,
 				Creator:        oneOrderModel.Creator,
@@ -305,13 +413,18 @@ func SpliceOrders(time string) {
 				log.Println(err.Error())
 				panic(err)
 			}
+			log.Println("duandian needToRemindOrder begin")
 			fmt.Println(needToRemindOrder)
+			log.Println("duandian needToRemindOrder end")
 			msg := message.NewMessage(watermill.NewUUID(), needToRemindOrderJson)  // 封装用户信息和带拼接的短信
+			_ = msg
+			// todo 测试的话，注释掉下面语句
 			if err := common.PubSub.Publish("Topic.needToRemindOrder", msg); err != nil {
 				panic(err)
 			}
+			fmt.Println()
 		}
-		fmt.Println("patterns", patterns)
+		fmt.Println("patternsxx", patterns)
 		// 提醒： 明日 有阵雨，注意带伞；（优先级1）最高气温较前一日增加5度，升至25度，注意防范（优先级2）
 	}
 
@@ -320,10 +433,10 @@ func SpliceOrders(time string) {
 
 // 每1分钟查看一次订单，将符合条件的放到队列里 - 子func
 func cronOrderFunc() {
-	// 得到当前的时间：精确到分钟，调用SpliceOrders
+	// 得到当前的时间：精确到分钟，调用ProcessOrdersOfTime
 	localDateStr := utils.GetLocalHourMin4Str()
 	log.Println("localDateStr", localDateStr)
-	go SpliceOrders(localDateStr)
+	go ProcessOrdersOfTime(localDateStr)
 }
 // func 每1分钟查看一次订单，将符合条件的放到队列里
 // pubsub参考: https://studygolang.com/articles/26894
@@ -362,10 +475,11 @@ func AddUserOrderTel(userId int, preTele string, telephone string, city string, 
 	userInfoFlexibleModel := &user.UserInfoFlexible{}
 	userInfoFlexibleModel, has, err := userInfoFlexibleModel.QueryByUserId(userId)
 	if err != nil {
+		err = errnum.New(errnum.DbError, nil)
 		println("get user_info_flexible model error: ", err.Error())
 		return nil , err
 	} else if !has {
-		println("user_info_flexible model not exist")
+		log.Println("user_info_flexible model not exist")
 		return nil, errors.New("user_info_flexible model not exist")
 	}
 	telOrderRemaining := userInfoFlexibleModel.TelOrderRemaining
@@ -385,6 +499,7 @@ func AddUserOrderTel(userId int, preTele string, telephone string, city string, 
 	err = orderModelToAdd.Create()
 	if err != nil {
 		err = errnum.New(errnum.DbError, nil)
+		println("err", err.Error())
 		return nil, err
 	}
 	orderId := orderModelToAdd.OrderId
@@ -406,14 +521,14 @@ func AddUserOrderTel(userId int, preTele string, telephone string, city string, 
 			UpdateTime:      currentTime,
 		}
 		if _, err = session.InsertOne(orderDetailModelToAdd); err != nil {
-			err = errnum.New(errnum.DbError, nil)
+			err = errnum.New(errnum.DbError, err)
 			return nil, err
 		}
 	}
 
 	// 4.2 更新userInfoFlexibleModel
 	userInfoFlexibleModel.TelOrderRemaining -= 1
-	userInfoFlexibleModel.TodayEditChanceRemaining -= 1
+	//userInfoFlexibleModel.TodayEditChanceRemaining -= 1
 	if _, err = session.AllCols().Where("user_id=?", userId).Update(*userInfoFlexibleModel); err != nil {
 		err = errnum.New(errnum.DbError, err)
 		return nil, err
@@ -451,7 +566,7 @@ func GetUserOrderTel(userId int) (map[string]interface{}, error){
 
 	resOrderAndDetailList := make([]orderModel.ResOrderAndDetail, 0)
 	for _, oneOrderModel := range orderModelList {
-		// 这里和libs/order/order.go SpliceOrders方法差不多；
+		// 这里和libs/order/order.go ProcessOrdersOfTime方法差不多；
 		var resOrderAndDetail = new(orderModel.ResOrderAndDetail)
 		// PreTele, CityName未来做，其中CityName做map
 		resOrderAndDetail.OrderId = oneOrderModel.OrderId
@@ -572,7 +687,7 @@ func UpdateUserOrderTel(resOrderAndDetail orderModel.ResOrderAndDetail, userId i
 
 	// 4.4 更新userInfoFlexibleModel
 	userInfoFlexibleModel.TelOrderRemaining -= 1
-	userInfoFlexibleModel.TodayEditChanceRemaining -= 1
+	//userInfoFlexibleModel.TodayEditChanceRemaining -= 1
 	if _, err = session.AllCols().Where("user_id=?", userId).Update(*userInfoFlexibleModel); err != nil {
 		err = errnum.New(errnum.DbError, err)
 		return nil, err

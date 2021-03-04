@@ -11,7 +11,6 @@ type VipRightsMap struct {
 	VipLevel            int       `json:"vip_level" xorm:"INT(3)"`
 	WechatOrderMax      int       `json:"wechat_order_max" xorm:"INT(3) default 3 comment('微信订单最大配置数（-1代表无限）')"`
 	TelOrderMax         int       `json:"tel_order_max" xorm:"INT(3) default 0 comment('手机号订单最大配置数（-1代表无限）')"`
-	TodayEditChanceMax  int       `json:"today_edit_chance_max" xorm:"INT(3) default 10 comment('每天可编辑次数')"`
 	RemindPatternIdList string    `json:"remind_pattern_id_list" xorm:"TEXT comment('提醒模式id列表')"`
 	CreateTime          time.Time `json:"create_time" xorm:"TIMESTAMP"`
 	UpdateTime          time.Time `json:"update_time" xorm:"TIMESTAMP"`

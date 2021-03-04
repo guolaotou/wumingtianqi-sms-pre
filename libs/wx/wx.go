@@ -58,7 +58,7 @@ func WxLogin(wechatCode string) (map[string]interface{}, error) {
 			VipLevel:                 0,
 			WechatOrderRemaining:     0,
 			TelOrderRemaining:        0,
-			TodayEditChanceRemaining: 0,
+			//TodayEditChanceRemaining: 0,
 			Coin:                     0,
 			Diamond:                  0,
 			ExpirationTime:           0,

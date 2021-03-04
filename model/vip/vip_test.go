@@ -27,7 +27,6 @@ func TestVipRightsMap(t *testing.T) {
 		VipLevel:            vipLevel,
 		WechatOrderMax:      3,
 		TelOrderMax:         0,
-		TodayEditChanceMax:  10,
 		RemindPatternIdList: "[1]",
 		CreateTime:          currentTime,
 		UpdateTime:          currentTime,

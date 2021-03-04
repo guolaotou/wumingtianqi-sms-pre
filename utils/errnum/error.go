@@ -22,6 +22,9 @@ var (
 	ErrTelOrderChanceInsufficient = &Er{Code: 50200, Message:"Tel Order Chance Insufficient"}
 	ErrOrderNotFound = &Er{Code: 50201, Message:"Order Not Found"}
 
+	// invitation
+	ErrUserUsedInvitationCode = &Er{Code: 50301, Message: "User already used the code"}
+
 
 	// Continue add err types ...
 )

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 	"wumingtianqi/model/common"
 	"wumingtianqi/model/user"
 	"wumingtianqi/model/vip"
@@ -14,10 +15,10 @@ import (
 /**
  * @Author Evan
  * @Description 邀请码奖励获取接口
-	step1: 邀请码有效性检查：该邀请码是否正在被锁定（并发控制），剩余次数检查；邀请码权益解析
-	step2: 查询用户信息，若该用户当前已经是VIP，但非该邀请码对应VIP等级，则报错
+	step1: 邀请码有效性检查：该邀请码是否正在被锁定（todo 并发控制），剩余次数检查，邀请码权益解析；用户是否用过该邀请码；
+	step2: 查询用户信息，若该用户当前已经是VIP，但非该邀请码对应VIP等级，则覆盖旧vip
 	step3: 若该用户当前非VIP，或是该邀请码对应VIP等级，则可用: 给用户添加相应的权益，邀请码可用次数减一
-	step4: 事务：锁该邀请码（暂时用update where的方法做），以上表执行事务（这里是重点，未来做好并发控制） // todo 参考事务开启方式？并二次验证事务成功与否
+	step4: 事务：锁该邀请码（暂时用update where的方法做），以上表执行事务（这里是重点，未来做好并发控制）
  * @Date 14:36 2020-10-04
  * @Param 
  * @return
@@ -46,6 +47,19 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 		return nil, err
 	}
 
+	// 用户是否用过该邀请码
+	userInvitationMap := user.UserInvitationMap{}
+	_, has, err = userInvitationMap.QueryByUserInvitation(userId, invitationCode)
+	if err != nil {
+		err = errnum.New(errnum.DbError, err)
+		log.Println("QueryByUserInvitation  err: " + err.Error())
+		return nil, err
+	}
+	if has {
+		err = errnum.New(errnum.ErrUserUsedInvitationCode, err)
+		return nil, err
+	}
+
 	// step2
 	userInfoFlexibleModel := &user.UserInfoFlexible{}
 	userInfoFlexibleModel, has, err = userInfoFlexibleModel.QueryByUserId(userId)
@@ -58,14 +72,17 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 	} else {
 		println("model: ", userInfoFlexibleModel)
 	}
+	localDateInt := utils.GetSpecificDate8Int(0)
 	userVipLevel := userInfoFlexibleModel.VipLevel
-	if userVipLevel >= utils.VIP1 && userVipLevel != invitationVipLevel {  // 用户当前已经是VIP，但非该邀请码对应VIP等级，则报错
-		err = errnum.New(errnum.UserAlreadyVip, nil)
-		return nil, err
+	if userVipLevel >= utils.VIP1 && userVipLevel != invitationVipLevel {  // 用户当前已经是VIP，但非该邀请码对应VIP等级，则覆盖vip
+		// 之前是报错；现在是做成与非VIP逻辑一样；todo 未来支持多vip模式，采用顺延旧vip的机制
+		//err = errnum.New(errnum.UserAlreadyVip, nil)
+		//return nil, err
+		userInfoFlexibleModel.VipLevel = invitationVipLevel
+		userInfoFlexibleModel.ExpirationTime = localDateInt
 	}
 
 	// step3
-	localDateInt := utils.GetSpecificDate8Int(0)
 	if userInfoFlexibleModel.VipLevel == utils.VIP0 {  // 不是VIP
 		userInfoFlexibleModel.VipLevel = invitationVipLevel
 		userInfoFlexibleModel.ExpirationTime = localDateInt
@@ -88,14 +105,20 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 	// 解析出vip表的权益，赋予用户
 	wechatOrderMax := vipRightsMap.WechatOrderMax
 	telOrderMax := vipRightsMap.TelOrderMax
-	todayEditChanceMax := vipRightsMap.TodayEditChanceMax  // 20210216Now 改方案：加入待提醒队列的时候，用户今日可提醒次数减一；最大提醒次数为一天可配置次数
 	_ = vipRightsMap.RemindPatternIdList  // 暂时前端写死
-	// 赋予用户  // todo 部署后试试？
+	// 赋予用户
 	userInfoFlexibleModel.WechatOrderRemaining = wechatOrderMax
 	userInfoFlexibleModel.TelOrderRemaining = telOrderMax
-	userInfoFlexibleModel.TodayEditChanceRemaining = todayEditChanceMax  // todo 去掉todayEditChanceMax
-
+	currentTime := time.Now()
+	userInfoFlexibleModel.UpdateTime = currentTime
 	invitationModel.TimesRemaining -= 1
+	invitationModel.UpdateTime = currentTime
+
+	// 映射表记录
+	userInvitationMap.UserId = userId
+	userInvitationMap.InvitationCode = invitationCode
+	userInvitationMap.CreateTime = currentTime
+
 	// step4 事务：锁该邀请码（暂时用update where的方法做），以上表执行事务（这里是重点，未来做好并发控制）
 	// todo 未来压测这里
 	session := common.Engine.NewSession()
@@ -104,10 +127,11 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 		err = errnum.New(errnum.DbError, nil)
 		return nil, err
 	}
-	// 更新userInfoFlexible
+	// 4.1更新Invitation model
 	rowsAffected, err := session.AllCols().Where(
 		"invitation_code=?", invitationCode).And(
 			"times_remaining>=1").Update(*invitationModel)
+	log.Println("rowsAffected", rowsAffected)
 	if rowsAffected <= 0 {
 		err = errnum.New(errnum.RemainingNotEnough, errors.New("concurrent error"))
 		log.Println("rowsAffected", err.Error())
@@ -118,11 +142,20 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 		err = errnum.New(errnum.DbError, err)
 		return nil, err
 	}
+	// 4.2更新userInfoFlexible
 	_, err = session.Where("user_id=?", userId).Update(userInfoFlexibleModel)
 	if err != nil {
 		err = errnum.New(errnum.DbError, err)
 		return nil, err
 	}
+
+	// 4.3新增UserInvitationMap
+	if _, err = session.InsertOne(userInvitationMap); err != nil {
+		err = errnum.New(errnum.DbError, err)
+		return nil, err
+	}
+
+	// 4.4 提交事务
 	err = session.Commit()
 	if err != nil {
 		err = errnum.New(errnum.DbError, err)

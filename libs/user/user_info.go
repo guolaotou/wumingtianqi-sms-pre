@@ -3,9 +3,66 @@ package user
 import (
 	"errors"
 	"log"
+	"strconv"
+	"time"
 	"wumingtianqi/model/user"
+	"wumingtianqi/model/vip"
+	"wumingtianqi/utils"
 	"wumingtianqi/utils/errnum"
 )
+
+/**
+ * @Author Evan
+ * @Description 校验用户vip等级是否过期，若过期，则将vip置为0，用户权益全部置为vip0的权益
+	tips: 定时任务提醒那边也用到这个
+ * @Date 21:28 2021-03-04
+ * @Param 
+ * @return 
+ **/
+func CheckVipExpiration(userInfoFlexibleModel *user.UserInfoFlexible) (*user.UserInfoFlexible, error){
+	// vip等级过期处理
+	currentTime := time.Now()
+	expirationTime := userInfoFlexibleModel.ExpirationTime
+	currentTime8Int, _ := strconv.Atoi(currentTime.Format("20060102"))
+	if currentTime8Int > expirationTime {  // 过期
+		if userInfoFlexibleModel.VipLevel >= utils.VIP1 {
+			// vip0等级映射表信息  todo redis缓存做
+			vipRightsMap0 := &vip.VipRightsMap{}
+			vipRightsMap0, has, err := vipRightsMap0.QueryByVipLevel(0)
+			if err != nil {
+				err = errnum.New(errnum.DbError, err)
+				log.Println("QueryByVipLevel err:", err.Error())
+				return nil, err
+			} else if !has {
+				log.Println("QueryByVipLevel not found")
+				return nil, errors.New("QueryByVipLevel not found")
+			}
+			// 原vip等级映射表信息  todo redis缓存做
+			vipRightsMapOld := &vip.VipRightsMap{}
+			vipRightsMapOld, has, err = vipRightsMapOld.QueryByVipLevel(userInfoFlexibleModel.VipLevel)
+			if err != nil {
+				err = errnum.New(errnum.DbError, err)
+				log.Println("QueryByVipLevel err:", err.Error())
+				return nil, err
+			} else if !has {
+				log.Println("QueryByVipLevel not found")
+				return nil, errors.New("QueryByVipLevel not found")
+			}
+			// 现在剩余提醒次数更新
+			userInfoFlexibleModel.TelOrderRemaining = userInfoFlexibleModel.TelOrderRemaining - (vipRightsMapOld.TelOrderMax - vipRightsMap0.TelOrderMax)
+			userInfoFlexibleModel.WechatOrderRemaining = userInfoFlexibleModel.WechatOrderRemaining - (vipRightsMapOld.WechatOrderMax - vipRightsMap0.WechatOrderMax)
+			userInfoFlexibleModel.TodayTelRemindRemaining = userInfoFlexibleModel.TodayTelRemindRemaining - (vipRightsMapOld.TelOrderMax - vipRightsMap0.TelOrderMax)
+			userInfoFlexibleModel.VipLevel = utils.VIP0
+
+			// 提交更新
+			if err := userInfoFlexibleModel.Update(); err != nil {
+				err = errnum.New(errnum.DbError, err)
+				return nil, err
+			}
+		}
+	}
+	return userInfoFlexibleModel, nil
+}
 
 /**
  * @Author Evan
@@ -20,24 +77,18 @@ func GetUserInfo(userId int) (map[string]interface{}, error) {
 	userInfoFlexibleModel, has, err := userInfoFlexibleModel.QueryByUserId(userId)
 	if err != nil {
 		err = errnum.New(errnum.DbError, err)
-		log.Println("err: ", err)
+		log.Println("err: ", err.Error())
 		return nil, err
 	} else if !has {
 		log.Println("userInfoFlexibleModel not found")
 		return nil, errors.New("userInfoFlexibleModel not found")
 	}
-	// 解析user信息，然后打印出来
-	log.Println("userInfoFlexibleModel.InvitationCode", userInfoFlexibleModel.InvitationCode)
-	log.Println("userInfoFlexibleModel.VipLevel", userInfoFlexibleModel.VipLevel)
-	log.Println("userInfoFlexibleModel.WechatOrderRemaining", userInfoFlexibleModel.WechatOrderRemaining)
-	log.Println("userInfoFlexibleModel.TelOrderRemaining", userInfoFlexibleModel.TelOrderRemaining)
-	log.Println("userInfoFlexibleModel.TodayEditChanceRemaining", userInfoFlexibleModel.TodayEditChanceRemaining)
-	log.Println("userInfoFlexibleModel.Coin", userInfoFlexibleModel.Coin)
-	log.Println("userInfoFlexibleModel.Diamond", userInfoFlexibleModel.Diamond)
-	log.Println("userInfoFlexibleModel.ExpirationTime", userInfoFlexibleModel.ExpirationTime)
+	userInfoFlexibleModel, err = CheckVipExpiration(userInfoFlexibleModel)
+	if err != nil {
+		log.Println("err: ", err.Error())
+		return nil, err
+	}
 	// todo 格式化日期，返回，前端展示？调用接口，展示页面，再放邀请码链接，输入邀请码获取更多权益？？
-	//前端初始化页面，vip判断，如果非vip，那就让输入邀请码？（调研论坛的页面）
-	// todo 删除以上注释
 	resultData := map[string]interface{}{
 		"vip_level":              userInfoFlexibleModel.VipLevel,
 		"wechat_order_remaining": userInfoFlexibleModel.WechatOrderRemaining,
