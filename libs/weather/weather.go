@@ -451,6 +451,10 @@ func GetCityList() ([]ProvinceItem, error) {
 
 	// step1
 	citiesMap := make(map[string]map[string]map[string]string, 0)
+	var provinceSequenceList []string  // 记录`省`的顺序
+	var citySequenceMapList = make(map[string][]string, 0)  // 记录`市`的顺序
+	var districtSequenceMapList = make(map[string][]string, 0) // 记录`区`的顺序
+
 	for i := 0; i < len(cityListFromDb); i++ {
 		province := cityListFromDb[i].Province
 		cityValue := cityListFromDb[i].City
@@ -459,31 +463,61 @@ func GetCityList() ([]ProvinceItem, error) {
 
 		if _, ok := citiesMap[province]; !ok {
 			citiesMap[province] = make(map[string]map[string]string, 0)
+			provinceSequenceList = append(provinceSequenceList, province)
 		}
 		if _, ok := citiesMap[province][cityValue]; !ok {
 			citiesMap[province][cityValue] = make(map[string]string, 0)
+			citySequenceMapList[province] = append(citySequenceMapList[province], cityValue)
 		}
 		citiesMap[province][cityValue][district] = pinYin
+		districtSequenceMapList[province+"::"+cityValue] = append(districtSequenceMapList[province+"::"+cityValue], district)
+
 	}
 
-	// step2
+	//// step2 返回的时候顺序随机
+	//ProvinceList := make([]ProvinceItem, 0)  // 最后要的结果
+	//for provinceName, provinceChildsValue := range citiesMap {
+	//	// 最外面一层，这里是一个新的省份，初始化
+	//	provinceChildsList := make([]ProvinceChildItem, 0)
+	//
+	//	for cityName, cityChildsValue := range provinceChildsValue {
+	//		// 一个新的市，初始化
+	//		cityChildsList := make([]CityChildItem, 0)
+	//
+	//		for districtName, pinYin := range cityChildsValue {
+	//			cityChildsList = append(cityChildsList, CityChildItem{
+	//				Name:   districtName,
+	//				PinYin: pinYin,
+	//			})
+	//		}
+	//		provinceChildsList = append(provinceChildsList, ProvinceChildItem{
+	//			Name:  cityName,
+	//			Childs: cityChildsList,
+	//		})
+	//	}
+	//	ProvinceList = append(ProvinceList, ProvinceItem{
+	//		Name:   provinceName,
+	//		Childs: provinceChildsList,
+	//	})
+	//}
+	// new step2 按照从数据库中顺次取回的顺序返回
 	ProvinceList := make([]ProvinceItem, 0)  // 最后要的结果
-	for provinceName, provinceChildsValue := range citiesMap {
+	for _, provinceName := range provinceSequenceList {
 		// 最外面一层，这里是一个新的省份，初始化
 		provinceChildsList := make([]ProvinceChildItem, 0)
 
-		for cityName, cityChildsValue := range provinceChildsValue {
+		for _, cityName := range citySequenceMapList[provinceName] {
 			// 一个新的市，初始化
 			cityChildsList := make([]CityChildItem, 0)
 
-			for districtName, pinYin := range cityChildsValue {
+			for _, districtName := range districtSequenceMapList[provinceName + "::" + cityName] {
 				cityChildsList = append(cityChildsList, CityChildItem{
 					Name:   districtName,
-					PinYin: pinYin,
+					PinYin: citiesMap[provinceName][cityName][districtName],
 				})
 			}
 			provinceChildsList = append(provinceChildsList, ProvinceChildItem{
-				Name:  cityName,
+				Name:   cityName,
 				Childs: cityChildsList,
 			})
 		}
@@ -492,12 +526,12 @@ func GetCityList() ([]ProvinceItem, error) {
 			Childs: provinceChildsList,
 		})
 	}
-	//jsons, errs := json.Marshal(ProvinceList[0]) //转换成JSON返回的是byte[]
+
+	//jsons, errs := json.Marshal(ProvinceList[20:21]) //for test转换成JSON返回的是byte[]
 	//if errs != nil {
 	//	fmt.Println(errs.Error())
 	//}
 	//fmt.Println(string(jsons)) //byte[]转换成string 输出
-
 	return ProvinceList, nil
 }
 

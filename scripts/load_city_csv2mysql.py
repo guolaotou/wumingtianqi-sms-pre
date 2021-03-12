@@ -1,5 +1,5 @@
 # coding=utf-8
-import xlrd  # pip3 install --user xlrd
+import xlrd  # pip3 install --user xlrd; 如果上面的方法装到了python2换，那么运行下面的python3 -m pip install xlrd
 import os
 import yaml  # pip3 install --user pyyaml
 from sqlalchemy import create_engine

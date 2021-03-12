@@ -18,6 +18,7 @@ import (
 	"wumingtianqi/model/remind"
 	"wumingtianqi/model/user"
 	userLib "wumingtianqi/libs/user"
+	"wumingtianqi/model/vip"
 	weatherModel "wumingtianqi/model/weather"
 	"wumingtianqi/utils"
 	"wumingtianqi/utils/errnum"
@@ -230,7 +231,8 @@ func splicePattern8(city string, remindPattern *remind.RemindPattern) (SplicePat
  * @Description 通知前预处理用户
 	1. 获取用户信息
 	2. vip等级过期处理
-	3. 剩余次数判断
+	3. LastRemindTime更新，如果LastRemindTime是昨天之前，需要把权益更新
+	4. 剩余次数判断
 	todo 未来做vip提醒权限的判断：判断是否有该提醒的权限？
  * @Date 20:58 2021-02-25
  * @Param
@@ -255,9 +257,31 @@ func processBeforeNotify(userId int) (bool, error) {
 		return false, err
 	}
 
-	// 3. 剩余次数判断
-	if userInfoFlexibleModel.TelOrderRemaining <= 0 {
+	// 3.LastRemindTime更新，如果LastRemindTime是昨天之前，需要把权益更新
+	todayDate8Int := utils.GetSpecificDate8Int(0)
+	if userInfoFlexibleModel.LastRemindTime < todayDate8Int {
+		userInfoFlexibleModel.LastRemindTime = todayDate8Int
+
+		vipRightsMap := &vip.VipRightsMap{}
+		vipRightsMap, has, err = vipRightsMap.QueryByVipLevel(userInfoFlexibleModel.VipLevel)
+		if err != nil {
+			err = errnum.New(errnum.DbError, err)
+			log.Println("QueryByVipLevel err:", err.Error())
+			return false, err
+		} else if !has {
+			log.Println("QueryByVipLevel not found")
+			return false, errors.New("QueryByVipLevel not found")
+		}
+		userInfoFlexibleModel.TodayTelRemindRemaining = vipRightsMap.TelOrderMax
+	}
+	// 4. 剩余次数判断
+	if userInfoFlexibleModel.TodayTelRemindRemaining <= 0 {
 		return false, nil
+	}
+	// 提交更新
+	if err := userInfoFlexibleModel.Update(); err != nil {
+		err = errnum.New(errnum.DbError, err)
+		return false, err
 	}
 	return true, nil
 }
@@ -528,7 +552,6 @@ func AddUserOrderTel(userId int, preTele string, telephone string, city string, 
 
 	// 4.2 更新userInfoFlexibleModel
 	userInfoFlexibleModel.TelOrderRemaining -= 1
-	//userInfoFlexibleModel.TodayEditChanceRemaining -= 1
 	if _, err = session.AllCols().Where("user_id=?", userId).Update(*userInfoFlexibleModel); err != nil {
 		err = errnum.New(errnum.DbError, err)
 		return nil, err
@@ -687,7 +710,6 @@ func UpdateUserOrderTel(resOrderAndDetail orderModel.ResOrderAndDetail, userId i
 
 	// 4.4 更新userInfoFlexibleModel
 	userInfoFlexibleModel.TelOrderRemaining -= 1
-	//userInfoFlexibleModel.TodayEditChanceRemaining -= 1
 	if _, err = session.AllCols().Where("user_id=?", userId).Update(*userInfoFlexibleModel); err != nil {
 		err = errnum.New(errnum.DbError, err)
 		return nil, err

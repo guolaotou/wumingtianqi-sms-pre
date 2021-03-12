@@ -46,6 +46,7 @@ func TestGetCityList(t *testing.T) {
 	if err != nil {
 		println("err ioutil.ReadAll", err.Error())
 	} else {
-		fmt.Println("resBody", string(resBody))
+		//fmt.Println("resBody", string(resBody))
+		fmt.Println("resBody", resBody[0])
 	}
 }

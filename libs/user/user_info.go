@@ -93,7 +93,7 @@ func GetUserInfo(userId int) (map[string]interface{}, error) {
 		"vip_level":              userInfoFlexibleModel.VipLevel,
 		"wechat_order_remaining": userInfoFlexibleModel.WechatOrderRemaining,
 		"tel_order_remaining":    userInfoFlexibleModel.TelOrderRemaining,
-		"expiration_time":        userInfoFlexibleModel.ExpirationTime, // todo 处理
+		"expiration_time":        userInfoFlexibleModel.ExpirationTime, // 如果是vip0，那前端就隐掉该字段
 	}
 	return resultData, nil
 }

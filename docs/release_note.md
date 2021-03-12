@@ -11,7 +11,9 @@
 
 4.提醒的时候校验剩余次数是否足够，保证并发情况下的数据准确性
 
-5.新增docs/release_note.md; 新增docs/schema.sql
+5.新增"城市列表"接口
+
+6.新增docs/release_note.md; 新增docs/schema.sql
 
 **`确保自测`:**
 1. 天气提醒代码可用
@@ -22,7 +24,7 @@
 **`上线流程`：**
 1. 改表
 ```sql
-ALTER TABLE `user_info_flexible ` CHANGE today_edit_chance_remaining today_tel_remind_remaining int(3) DEFAULT '0' COMMENT '短信提醒当天剩余次数';
+ALTER TABLE `user_info_flexible` CHANGE today_edit_chance_remaining today_tel_remind_remaining int(3) DEFAULT '0' COMMENT '短信提醒当天剩余次数';
 ALTER TABLE `user_info_flexible` ADD COLUMN last_remind_time int(11) DEFAULT '20000101' COMMENT '上次提醒时间' AFTER today_tel_remind_remaining;
 ALTER TABLE vip_rights_map DROP today_edit_chance_max;
 ```
@@ -33,3 +35,9 @@ ALTER TABLE vip_rights_map DROP today_edit_chance_max;
 4.部署运行
 部署订单模块；确保supervisor重启
 部署web；确保supervisor重启
+
+### v0.0.1.2[2021-03-12]
+**`Query Parameter`:**
+**`功能修改`:**
+1.城市列表接口固定返回的顺序
+2.代码优化

@@ -58,7 +58,6 @@ type UserInfoFlexible struct {
 	VipLevel                 int       `json:"vip_level" xorm:"INT(3) default 0"`
 	WechatOrderRemaining     int       `json:"wechat_order_remaining" xorm:"INT(3) default 0 comment('微信订单剩余配置数')"`
 	TelOrderRemaining        int       `json:"tel_order_remaining" xorm:"INT(3) default 0 comment('手机号订单剩余配置数')"`
-	//TodayEditChanceRemaining int       `json:"today_edit_chance_remaining" xorm:"INT(3) default 10 comment('当天剩余编辑次数')"`
 	TodayTelRemindRemaining  int       `json:"today_tel_remind_remaining" xorm:"INT(3) default 0 comment('短信提醒当天剩余次数')"`
 	LastRemindTime           int       `json:"last_remind_time" xorm:"INT(11) default 20000101 comment('上次提醒时间')"`
 	Coin                     int       `json:"coin" xorm:"INT(20) default 0"`

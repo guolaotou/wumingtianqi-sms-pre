@@ -33,6 +33,7 @@ func WxLogin(wechatCode string) (map[string]interface{}, error) {
 	u, has, err := u.QueryByOpenId(openId)
 
 	currentTime := time.Now()
+	newUserFlag := false
 	if err != nil {
 		err = errnum.New(errnum.DbError, nil)
 		log.Println("openId",openId, "sessionKey: ", sessionKey)
@@ -58,7 +59,6 @@ func WxLogin(wechatCode string) (map[string]interface{}, error) {
 			VipLevel:                 0,
 			WechatOrderRemaining:     0,
 			TelOrderRemaining:        0,
-			//TodayEditChanceRemaining: 0,
 			Coin:                     0,
 			Diamond:                  0,
 			ExpirationTime:           0,
@@ -72,6 +72,7 @@ func WxLogin(wechatCode string) (map[string]interface{}, error) {
 			log.Println(err.Error())
 			return nil, err
 		}
+		newUserFlag = true
 	}
 	u.UserToken = sessionKey
 	u.UpdateTime = currentTime
@@ -85,8 +86,8 @@ func WxLogin(wechatCode string) (map[string]interface{}, error) {
 	res := map[string]interface{} {
 		"user_id": u.Id,
 		"user_token": u.UserToken,
+		"new_user": newUserFlag,
 	}
-
 	return res, nil
 }
 

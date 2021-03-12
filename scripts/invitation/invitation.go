@@ -108,6 +108,32 @@ func SetInvitationCodeAuthLevel2(invitationCode string) *user.Invitation {
 	invitationModel.UpdateTime = currentTime
 	return invitationModel
 }
+
+/**
+ * @Author Evan
+ * @Description 给邀请码分配权限——三等邀请码
+ * @Date 21:20 2021-03-05
+ * @Param 
+ * @return 
+ **/
+func SetInvitationCodeAuthLevel3(invitationCode string, timesMax int, duration int, coin int, diamond int) *user.Invitation {
+	invitationModel := new(user.Invitation)
+	currentTime := time.Now()
+	invitationModel.InvitationCode = invitationCode
+	invitationModel.TimesMax = timesMax
+	invitationModel.TimesRemaining = timesMax
+	invitationModel.Vip = utils.VIP1
+	invitationModel.Duration = duration
+	invitationModel.Coin = coin
+	invitationModel.Diamond = diamond
+	invitationModel.Creator = -1
+	invitationModel.CreateTime = currentTime
+	invitationModel.UpdateTime = currentTime
+	return invitationModel
+}
+
+
+
 /**
  * @Author Evan
  * @Description 摇色子的工具
@@ -219,6 +245,28 @@ func ProcessAll() {
 	// alter table invitation AUTO_INCREMENT=1;
 }
 
+/**
+ * @Author Evan
+ * @Description 生成邀请码，并赋予vip1的权限
+ * @Date 20:21 2021-03-05
+ * @Param
+ * @return
+ **/
+func processVip1() {
+	model.InitMysql()
+	invitationCode := generateInvitationCode()
+	timesMax := 100  // 该邀请码可用次数
+	duration := 31 // 分配的天数
+	coin := 0
+	diamond := 0
+	invitationModel := SetInvitationCodeAuthLevel3(invitationCode, timesMax, duration, coin, diamond)
+
+	if err := invitationModel.Create(); err != nil {
+		println("Creating level 3 failed")
+		panic(err)
+	}
+}
+
 // go run scripts/invitation/invitation.go
 func main() {
 	/*
@@ -233,5 +281,8 @@ func main() {
 	println("strInvitation32", strInvitation32)
 
 	// 全流程：生成10个一等邀请码，5个二等邀请码;为该邀请码配置权限，并把该邀请码存入数据库
-	ProcessAll()
+	//ProcessAll()
+
+	// 生成1个可用100次的vip1邀请码
+	processVip1()
 }
