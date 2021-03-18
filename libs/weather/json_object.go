@@ -57,7 +57,7 @@ type XinZhiWeatherDailyItem struct {
 // 城市拼接用
 type CityChildItem struct {
 	Name   string `json:"name"`
-	PinYin string `json:"pin_yin"`
+	CityCode string `json:"city_code"`
 }
 type ProvinceChildItem struct {
 	Name  string `json:"name"`

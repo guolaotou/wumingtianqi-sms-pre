@@ -32,7 +32,7 @@ ALTER TABLE vip_rights_map DROP today_edit_chance_max;
 2. 改数据
 `user_info_flexible`表中所有数据的`today_tel_remind_remaining`字段改成相应vip等级的值
 
-4.部署运行
+3.部署运行
 部署订单模块；确保supervisor重启
 部署web；确保supervisor重启
 
@@ -41,3 +41,41 @@ ALTER TABLE vip_rights_map DROP today_edit_chance_max;
 **`功能修改`:**
 1.城市列表接口固定返回的顺序
 2.代码优化
+
+
+### v0.0.1.3[2021-03-18]
+**`Query Parameter`:**
+**`功能修改`:**
+1.城市表新增code列，用作城市的唯一标识
+2.抓取天气的代码，用code做唯一标识（改day_weather表）
+3.前后端查询城市天气列表，用code做城市唯一标识
+4.抓取提醒逻辑，用code做唯一标识
+
+
+**`上线流程`：**
+1. 改表
+```sql
+ALTER TABLE `city` ADD INDEX IDX_city_code ( `code` );
+ALTER TABLE `day_weather` CHANGE city_pin_yin city_code varchar(30) NOT NULL;
+DROP INDEX `IDX_city_code` ON city;
+```
+
+2.更新城市数据
+清空city表，重跑脚本load_city_csv2mysql.py
+```sql
+TRUNCATE `wumingtianqi`.`city`;
+```
+
+3.改数据
+清空 day_weather表
+order表字段为remind_city的值改成对应的city_code
+```sql
+TRUNCATE `wumingtianqi`.`day_weather`;
+SELECT * FROM wumingtianqi.day_weather limit 9999;
+SELECT * FROM wumingtianqi.order limit 9999;
+```
+
+4.部署运行
+部署订单模块；确保supervisor重启
+部署web；确保supervisor重启
+

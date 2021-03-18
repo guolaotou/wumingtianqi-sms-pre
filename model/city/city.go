@@ -11,6 +11,7 @@ type City struct {
 	District string `json:"district" xorm:"VARCHAR(20)"`
 	PinYin   string `json:"pin_yin" xorm:"index VARCHAR(30)"`
 	Abbr     string `json:"abbr" xorm:"VARCHAR(60)"`
+	Code     string `json:"code" xorm:"index VARCHAR(32) default 'A' comment('xinzhi code')"`
 }
 
 func (c * City) Create() error {
@@ -34,9 +35,9 @@ func (c *City) Delete() error {
 	return nil
 }
 
-func QueryByPinYin(pinYin string) (*City, bool, error) {
+func QueryByCityCode(cityCode string) (*City, bool, error) {
 	c := new(City)
-	has, err := common.Engine.Where("pin_yin=?", pinYin).Get(c)
+	has, err := common.Engine.Where("code=?", cityCode).Get(c)
 	return c, has, err
 }
 

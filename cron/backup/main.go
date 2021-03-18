@@ -24,14 +24,14 @@ func main() {
 		fmt.Println(err.Error())
 	}
 	fmt.Println("cityModel", cityModel)
-	//fmt.Println("cityModel", cityModel[0].PinYin)
+	//fmt.Println("cityModel", cityModel[0].Code)
 	//city, err := city.GetOneCity()
 	//if err != nil {
 	//	fmt.Println(err.Error())
 	//}
 	//fmt.Println("city", city)
 
-	//res, err := weather.CityWeatherDailyGet(cityModel[0].PinYin)
+	//res, err := weather.CityWeatherDailyGet(cityModel[0].Code)
 	//if err != nil {
 	//	fmt.Println(err.Error())
 	//} else {

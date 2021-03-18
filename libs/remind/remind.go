@@ -32,7 +32,7 @@ func PubSubOrder() {  // 订阅"需要提醒的订单" then发布what？？
 
 			// 2.拼接短信，然后放到短信队列里
 			// 2.1根据city找到城市的中文
-			cityModel, _, _ := city.QueryByPinYin(needToRemindOrder.City)
+			cityModel, _, _ := city.QueryByCityCode(needToRemindOrder.CityCode)
 			district := cityModel.District
 
 			// 2.2 拼接完整短信  // todo libs/order/order.go pattern那控制字符数，不要在后面控制了；测出字符边界在哪

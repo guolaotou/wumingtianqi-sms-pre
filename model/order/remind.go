@@ -5,7 +5,7 @@ import "wumingtianqi/model/common"
 // 提醒对象对照表
 type RemindObject struct {
 	Id            int    `json:"id" xorm:"pk autoincr INT(11)"`
-	WeatherPinYin string `json:"weather_pin_yin" xorm:"VARCHAR(30)"`
+	WeatherCode   string `json:"weather_code" xorm:"VARCHAR(30)"`
 	WeatherObject string `json:"weather_object" xorm:"VARCHAR(30)"`
 	WeatherFlag   string `json:"weather_flag" xorm:"VARCHAR(30)"`
 }

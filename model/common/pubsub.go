@@ -3,7 +3,7 @@ package common
 
 // 需要提醒的订单信息
 type NeedToRemindOrder struct {
-	City           string `json:"city"`
+	CityCode       string `json:"city_code"`
 	SubscriberName string `json:"subscriber_name"`
 	TelephoneNum   string `json:"telephone_num"`
 	Creator        int    `json:"creator"`

@@ -12,7 +12,7 @@ import (
 
 // 历史天气表
 type DayWeather struct {
-	CityPinYin    string `json:"city_pin_yin" xorm:"pk VARCHAR(30)"`
+	CityCode      string `json:"city_code" xorm:"pk VARCHAR(30)"`
 	DateId        int    `json:"date_id" xorm:"pk INT(11)"`
 	TextDay       string `json:"text_day" xorm:"VARCHAR(30)"`
 	CodeDay       int    `json:"code_day" xorm:"INT(11)"`
@@ -73,8 +73,8 @@ func (m *DayWeather)PreReplaceMysql(dayWeatherModel DayWeather) string {  // tod
 	//var aa  string
 	//aa = "`"
 	//	// 写一个函数，用于拼接sql值。里面识别非int,需要加引号？
-	//	fmt.Println("lala", reflect.TypeOf(dayWeatherList[i].CityPinYin))
-	//	aa += "'" + dayWeatherList[i].CityPinYin + "'"
+	//	fmt.Println("lala", reflect.TypeOf(dayWeatherList[i].Code))
+	//	aa += "'" + dayWeatherList[i].Code + "'"
 	//	if i != len(dayWeatherList) - 1 {
 	//		aa += ","
 	//	}
@@ -82,10 +82,10 @@ func (m *DayWeather)PreReplaceMysql(dayWeatherModel DayWeather) string {  // tod
 
 
 	_ = `
-			REPLACE INTO wumingtianqi.day_weather (city_pin_yin, date_id, text_day, code_day, text_night, code_night, high, low, wind_direction, wind_scale, wind_speed, humidity)
-			VALUES ('tianjin', '20200508', '晴', '2', '雨'
+			REPLACE INTO wumingtianqi.day_weather (code, date_id, text_day, code_day, text_night, code_night, high, low, wind_direction, wind_scale, wind_speed, humidity)
+			VALUES ('WX4FBXXFKE4F', '20200508', '晴', '2', '雨'
 				, '1', '40', '10', '南', '2'
-				, '10', '20'), ('tianjin', '20200507', '晴', '1', '晴'
+				, '10', '20'), ('WX4FBXXFKE4F', '20200507', '晴', '1', '晴'
 				, '1', '40', '10', '南', '2'
 				, '10', '20');
 			`
@@ -102,7 +102,7 @@ func (m *DayWeather) Create() error {
 
 func (m *DayWeather) Update() error {
 	if _, err := common.Engine.Where(
-		"city_pin_yin=?", m.CityPinYin).And(
+		"city_code=?", m.CityCode).And(
 			"date_id=?", m.DateId).Update(m); err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func (m *DayWeather) Delete() error {
 func QueryByCityDate(city string, date int) (*DayWeather, bool, error) {
 	d := new(DayWeather)
 	has, err := common.Engine.Where(
-		"city_pin_yin=?", city).And(
+		"city_code=?", city).And(
 			"date_id=?", date).Get(d)
 	return d, has, err
 }

@@ -17,14 +17,15 @@ func TestCity(t *testing.T) {
 	defer session.Close()
 
 	// 1. 新建
-	pinYin := "siming"
+	cityCode := "WX4FBXXFKE4F"
 	c := &city.City{
 		Id:       2,
 		Province: "福建省",
 		City:     "厦门市",
 		District: "思明区",
-		PinYin:   pinYin,
+		PinYin:   "Siming",
 		Abbr:     "福建/厦门/思明",
+		Code:     cityCode,
 	}
 	t.Log("*** begin create session****** ")
 
@@ -35,7 +36,7 @@ func TestCity(t *testing.T) {
 	// 2. 查询
 	t.Log("*** begin query session****** ")
 
-	c2, has, err := city.QueryByPinYin(pinYin)
+	c2, has, err := city.QueryByCityCode(cityCode)
 	if err != nil || !has {
 		t.Error("city not found")
 	} else {
@@ -48,7 +49,7 @@ func TestCity(t *testing.T) {
 
 	c2.Abbr = "福建/厦门/思明思明"
 	c2.Update()
-	c3, _, _ := city.QueryByPinYin(pinYin)
+	c3, _, _ := city.QueryByCityCode(cityCode)
 	t.Log("city: ", c3)
 	t.Log("*** end update session****** ")
 

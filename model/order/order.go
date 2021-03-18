@@ -10,7 +10,7 @@ import (
 type Order struct {
 	OrderId 	   int       `json:"order_id" xorm:"pk autoincr INT(11)"`
 	//UserId     int       `json:"user_id" xorm:"INT(11)"`
-	RemindCity     string    `json:"remind_city" xorm:"json"`            // 城市的拼音
+	RemindCity     string    `json:"remind_city" xorm:"json"`            // 城市的拼音 -> 改为城市的唯一code
 	RemindTime     string    `json:"remind_time" xorm:"VARCHAR(4)"`      // 提醒时间， 0900
 	SubscriberName string    `json:"subscriber_name" xorm:"VARCHAR(30)"` // 被提醒者的姓名
 	TelephoneNum   string    `json:"telephone_num" xorm:"VARCHAR(33)"`
@@ -93,7 +93,7 @@ type ResOrderAndDetail struct {
 	OrderId     int                  `json:"order_id"`
 	PreTele     string               `json:"pre_tele"`
 	Telephone   string               `json:"telephone"`
-	City        string               `json:"city"`
+	CityCode        string           `json:"city_code"`
 	CityName    string               `json:"city_name"`
 	RemindTime  string               `json:"remind_time"`
 	OrderDetail []ResOrderDetailItem `json:"order_detail"`

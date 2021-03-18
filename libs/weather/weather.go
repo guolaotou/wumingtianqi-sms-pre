@@ -20,7 +20,7 @@ import (
 )
 
 // 根据指定城市，获取新知天气信息
-func Get2XinZhiWhether(fakeData bool, cityPinYin string) (XinZhiWeatherDailyResults, error) {  // fakeData为true就不用真的去调用数据了，直接用假数据
+func Get2XinZhiWhether(fakeData bool, code string) (XinZhiWeatherDailyResults, error) {  // fakeData为true就不用真的去调用数据了，直接用假数据
 	if fakeData {
 //		resBody := `{
 //    "results":[
@@ -236,7 +236,7 @@ func Get2XinZhiWhether(fakeData bool, cityPinYin string) (XinZhiWeatherDailyResu
 	}
 	q := req.URL.Query()
 	q.Add("key", apiKey)
-	q.Add("location", cityPinYin)
+	q.Add("location", code)
 	req.URL.RawQuery = q.Encode()
 	//fmt.Println(req.URL.String())
 	// https://api.seniverse.com/v3/weather/daily.json?location=beijing&language=zh-Hans&unit=c&start=-1&days=5&key=xxx
@@ -265,12 +265,6 @@ func Get2XinZhiWhether(fakeData bool, cityPinYin string) (XinZhiWeatherDailyResu
 
 // todo 根据城市list，顺次异步调用天气信息（控制调用频率）；结果放在channel里
 // todo 读取channel，在最后写入数据库（用sync.WaitGroup）
-
-// todo 有路由的函数，做好路由handler函数和逻辑handler函数的解耦
-func CityWeatherDailyGet(cityPinYin string) (XinZhiWeatherDailyResults, error) {
-	res, err := Get2XinZhiWhether(config.GlobalConfig.Weather.FakeData, cityPinYin)
-	return res, err
-}
 
 func dayWeather2Map(xinZhiWeather XinZhiWeatherDailyResults) map[int]XinZhiWeatherDailyItem{
 	//fmt.Println("xinZhiWeather", xinZhiWeather.Results[0].Daily)
@@ -316,16 +310,18 @@ func UpdateWeatherDaily() {
 
 	for i := 0; i < len(cityList); i++ {
 		// 获取城市天气信息
-		pinYin := cityList[i].PinYin  // "beijing"
-		println("pinYin", pinYin)
-		xinZhiWeather, err := Get2XinZhiWhether(config.GlobalConfig.Weather.FakeData, pinYin)
+		//code := cityList[i].Code  // "beijing"
+		//println("code", code)
+		cityCode := cityList[i].Code  // "WX4EPCD9BMPN"
+		println("cityCode", cityCode)
+		xinZhiWeather, err := Get2XinZhiWhether(config.GlobalConfig.Weather.FakeData, cityCode)
 		if err != nil {
 			panic(err)
 		}
 		// todo 以日期做map
 		fmt.Println(xinZhiWeather)
 		if reflect.DeepEqual(xinZhiWeather, XinZhiWeatherDailyResults{}) {
-			log.Printf(pinYin + " has no data")
+			log.Printf(cityCode + " has no data")
 			continue
 		}
 		dayWeatherMap := dayWeather2Map(xinZhiWeather)
@@ -342,7 +338,7 @@ func UpdateWeatherDaily() {
 			fmt.Println("dayWeatherMap[localDateInt]", dayWeatherMap[localDateInt])  // todo delete
 			fmt.Println("dayWeatherMap[localDateInt]", XinZhiWeatherDailyItem{} == dayWeatherMap[localDateInt])  // todo delete
 			if (XinZhiWeatherDailyItem{} == dayWeatherMap[localDateInt]) == true {
-				fmt.Println("天气信息抓取有误" + pinYin + strconv.Itoa(localDateInt))
+				fmt.Println("天气信息抓取有误" + cityCode + strconv.Itoa(localDateInt))
 				// todo 报错，打tick
 				continue
 			}
@@ -355,7 +351,7 @@ func UpdateWeatherDaily() {
 			WindSpeed, err := strconv.Atoi(dayWeatherMap[localDateInt].WindSpeed)
 			Humidity, err := strconv.Atoi(dayWeatherMap[localDateInt].Humidity)
 			dayWeather := weather.DayWeather{
-				CityPinYin:    pinYin,
+				CityCode:      cityCode,
 				DateId:        localDateInt,
 				TextDay:       dayWeatherMap[localDateInt].TextDay,
 				CodeDay:       CodeDay,
@@ -380,7 +376,7 @@ func UpdateWeatherDaily() {
 			}
 		}
 
-		time.Sleep(6 * time.Second)  // 先这样写，以后优化？
+		time.Sleep(2 * time.Second)  // 先这样写，以后优化？
 	}
 }
 
@@ -411,7 +407,7 @@ func UpdateWeatherDaily() {
 			"childs": [
 			  {
 				"name": "海淀区",
-				"pinyin": "haidian"
+				"city_code": "WWxxdfa"
 			  }
 			]
 		  }
@@ -425,7 +421,7 @@ func UpdateWeatherDaily() {
 			"childs": [
 			  {
 				"name": "长安区",
-				"pinyin": "Changan"
+				"city_code": "WWxxfsf"
 			  }
 			]
 		  }
@@ -459,7 +455,7 @@ func GetCityList() ([]ProvinceItem, error) {
 		province := cityListFromDb[i].Province
 		cityValue := cityListFromDb[i].City
 		district := cityListFromDb[i].District
-		pinYin := cityListFromDb[i].PinYin
+		cityCode := cityListFromDb[i].Code
 
 		if _, ok := citiesMap[province]; !ok {
 			citiesMap[province] = make(map[string]map[string]string, 0)
@@ -469,7 +465,7 @@ func GetCityList() ([]ProvinceItem, error) {
 			citiesMap[province][cityValue] = make(map[string]string, 0)
 			citySequenceMapList[province] = append(citySequenceMapList[province], cityValue)
 		}
-		citiesMap[province][cityValue][district] = pinYin
+		citiesMap[province][cityValue][district] = cityCode
 		districtSequenceMapList[province+"::"+cityValue] = append(districtSequenceMapList[province+"::"+cityValue], district)
 
 	}
@@ -484,10 +480,10 @@ func GetCityList() ([]ProvinceItem, error) {
 	//		// 一个新的市，初始化
 	//		cityChildsList := make([]CityChildItem, 0)
 	//
-	//		for districtName, pinYin := range cityChildsValue {
+	//		for districtName, code := range cityChildsValue {
 	//			cityChildsList = append(cityChildsList, CityChildItem{
 	//				Name:   districtName,
-	//				PinYin: pinYin,
+	//				Code: code,
 	//			})
 	//		}
 	//		provinceChildsList = append(provinceChildsList, ProvinceChildItem{
@@ -513,7 +509,7 @@ func GetCityList() ([]ProvinceItem, error) {
 			for _, districtName := range districtSequenceMapList[provinceName + "::" + cityName] {
 				cityChildsList = append(cityChildsList, CityChildItem{
 					Name:   districtName,
-					PinYin: citiesMap[provinceName][cityName][districtName],
+					CityCode: citiesMap[provinceName][cityName][districtName],
 				})
 			}
 			provinceChildsList = append(provinceChildsList, ProvinceChildItem{

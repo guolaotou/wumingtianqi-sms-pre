@@ -17,10 +17,10 @@ func TestDayWeather(t *testing.T) {
 	defer session.Close()
 
 	// 1. 新建
-	city := "beijing"
+	cityCode := "WX4FBXXFKE4F"
 	dateId := 20200507
 	d := &weather.DayWeather{
-		CityPinYin:    city,
+		CityCode:      cityCode,
 		DateId:        dateId,
 		TextDay:       "晴",
 		CodeDay:       1,
@@ -43,7 +43,7 @@ func TestDayWeather(t *testing.T) {
 
 	// 2. 查询
 	t.Log("*** begin query session****** ")
-	d2, has, err := weather.QueryByCityDate(city, dateId)
+	d2, has, err := weather.QueryByCityDate(cityCode, dateId)
 	if  err != nil || !has {
 		t.Error("city & date not found")
 		panic(err)
@@ -56,7 +56,7 @@ func TestDayWeather(t *testing.T) {
 	t.Log("*** begin update session****** ")
 	d2.High = 40
 	d2.Update()
-	d3, _, _ := weather.QueryByCityDate(city, dateId)
+	d3, _, _ := weather.QueryByCityDate(cityCode, dateId)
 	t.Log("dayWeather: ", d3)
 	t.Log("*** end update session****** ")
 

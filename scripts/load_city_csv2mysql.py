@@ -51,7 +51,7 @@ class LoadCityMysqlLib(object):
         """ 制作"数据库中已经存在的城市"map
         :return:
         """
-        query_sql = "SELECT province, city, district, pin_yin, abbr FROM city"
+        query_sql = "SELECT province, city, district, pin_yin, abbr, code FROM city"
         exist_cities = session.execute(query_sql).fetchall()
         for the_city in exist_cities:
             province = the_city["province"]
@@ -60,8 +60,8 @@ class LoadCityMysqlLib(object):
             self.exclude_map[Utils.make_map_key_util(
                 province, city, district)] = 1
 
-        self.exclude_map.update({"北京市::北京市::北京市": 1})
-        self.exclude_map.update({"北京市::北京市::海淀区": 1})
+        # self.exclude_map.update({"北京市::北京市::北京市": 1})
+        # self.exclude_map.update({"北京市::北京市::海淀区": 1})
 
     @staticmethod
     def _split_district(administrative_area):
@@ -112,7 +112,7 @@ class LoadCityMysqlLib(object):
             # 从第一个有数的开始，解析、
             line = table.row_values(i)
 
-            city_id = line[0]  # 城市id
+            code = line[0]  # 城市id （新知天气 code）
             administrative_area = line[1]  # 行政归属
             abbr = line[2]  # 城市简称
             pinyin = line[3]  # 拼音
@@ -123,16 +123,15 @@ class LoadCityMysqlLib(object):
             if pinyin != "" and pinyin != 42:  # excel里的拼音列里会有'#N/A'，在这里会被读作整型42
                 if not exclude_map.get(
                         Utils.make_map_key_util(province, city, district)):
-                    city_to_db_list.append((province, city, district, pinyin, abbr))
+                    city_to_db_list.append((province, city, district, pinyin, abbr, code))
             else:
                 print(
-                "i:{0}\tid: {1}\t行政归属: {2}\t\t城市简称: {3}\t\t拼音：{4}".format(
-                    i, city_id, administrative_area, abbr, pinyin))
+                "i:{0}\tcode: {1}\t行政归属: {2}\t\t城市简称: {3}\t\t拼音：{4}".format(
+                    i, code, administrative_area, abbr, pinyin))
         return city_to_db_list
 
     def load_city_to_mysql(self, city_to_db_list):
         """ 导入数据到mysql
-
         :param city_to_db_list:
         :return:
         """
@@ -143,7 +142,7 @@ class LoadCityMysqlLib(object):
         splice_values = ",".join(str(line) for line in city_to_db_list)
 
         insert_sql = "INSERT INTO city(province, city, district, pin_yin," \
-                     " abbr) values {0}".format(splice_values)
+                     " abbr, code) values {0}".format(splice_values)
         # print("insert_sql: \n", insert_sql)
         try:
             session.execute(insert_sql)

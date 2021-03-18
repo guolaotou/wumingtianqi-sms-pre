@@ -42,16 +42,16 @@ type Weather map[string]WeatherItem
 
 func FakeWeather() (Weather, Weather) {  // 如果数据库中没有数据，可以用这里的假数据暂时测试
 	yesterdayWeather := Weather{
-		"Beijing": WeatherItem{
-			"city":      "Beijing",
+		"WX4FBXXFKE4F": WeatherItem{
+			"city_code":      "Beijing",
 			"code_text": "晴",
 			"code_id":   1,
 			"high":      20,
 		},
 	}
 	todayWeather := Weather{
-		"Beijing": WeatherItem{
-			"city":      "Beijing",
+		"WX4FBXXFKE4F": WeatherItem{
+			"city_code":      "Beijing",
 			"code_text": "阵雨",
 			"code_id":   10,
 			"high":      25,
@@ -68,19 +68,19 @@ func FakeWeather() (Weather, Weather) {  // 如果数据库中没有数据，可
  * @Param
  * @return
  **/
-func Weather2Map(city string) (Weather, Weather, error) {
+func Weather2Map(cityCode string) (Weather, Weather, error) {
 	// 计算今日时间
 	yesterdayDate8Int := utils.GetSpecificDate8Int(0)  // todo 这个之后需要协调today和yestoday
-	yesterdayWeatherAll, has, err := weatherModel.QueryByCityDate(city, yesterdayDate8Int)
+	yesterdayWeatherAll, has, err := weatherModel.QueryByCityDate(cityCode, yesterdayDate8Int)
 	if err != nil {
-		err = errnum.New(errnum.DbError, nil)
+		err = errnum.New(errnum.DbError, err)
 		return nil, nil, err
 	} else if !has {
 		return nil, nil, errors.New("no Weather data of yesterday")
 	}
 	yesterdayWeather := Weather{
-		city: WeatherItem{
-			"city": city,
+		cityCode: WeatherItem{
+			"city_code": cityCode,
 			"code_text": yesterdayWeatherAll.TextDay,  // todo 以后考虑把白天天气和晚上天气统一
 			"code_id": yesterdayWeatherAll.CodeDay,
 			"high": yesterdayWeatherAll.High,
@@ -88,16 +88,16 @@ func Weather2Map(city string) (Weather, Weather, error) {
 	}
 
 	todayDate8Int := utils.GetSpecificDate8Int(1)  // todo 这个之后需要协调today和yestoday
-	todayWeatherAll, has, err := weatherModel.QueryByCityDate(city, todayDate8Int)
+	todayWeatherAll, has, err := weatherModel.QueryByCityDate(cityCode, todayDate8Int)
 	if err != nil {
-		err = errnum.New(errnum.DbError, nil)
+		err = errnum.New(errnum.DbError, err)
 		return nil, nil, err
 	} else if !has {
 		return nil, nil, errors.New("no Weather data of today")
 	}
 	todayWeather := Weather{
-		city: WeatherItem{
-			"city": city,
+		cityCode: WeatherItem{
+			"city_code": cityCode,
 			"code_text": todayWeatherAll.TextDay,
 			"code_id": todayWeatherAll.CodeDay,
 			"high": todayWeatherAll.High,
@@ -111,7 +111,7 @@ type SplicePatternModel struct {
 	Priority          int    `json:"priority"`
 }
 
-func splicePattern1(city string, remindPattern *remind.RemindPattern) (SplicePatternModel, error){
+func splicePattern1(cityCode string, remindPattern *remind.RemindPattern) (SplicePatternModel, error){
 	// 1. 降水天气
 	// 枚举"天气现象"表，整理降水的所有情况 [1,2,3]，考虑remind_pattern里新增一个extension字段（json格式），这个字段不同业务不一样，需要的东西也不一样。
 	// 降雨对应的id todo 以后再弄个天气代码映射表？或者在某个地方弄个静态变量存
@@ -122,14 +122,14 @@ func splicePattern1(city string, remindPattern *remind.RemindPattern) (SplicePat
 	if config.GlobalConfig.Weather.FakeData {
 		_, todayWeather = FakeWeather()
 	} else {
-		_, todayWeather, err = Weather2Map(city)
+		_, todayWeather, err = Weather2Map(cityCode)
 		if err != nil {
 			return SplicePatternModel{}, err
 		}
 	}
 
-	codeText := todayWeather[city]["code_text"].(string)
-	codeToday := todayWeather[city]["code_id"].(int)
+	codeText := todayWeather[cityCode]["code_text"].(string)
+	codeToday := todayWeather[cityCode]["code_id"].(int)
 	isTodayRain, _ := utils.IsContain(codeToday, RainPatternIds)
 
 	var pattern = new(SplicePatternModel)
@@ -140,22 +140,22 @@ func splicePattern1(city string, remindPattern *remind.RemindPattern) (SplicePat
 	return *pattern, nil
 }
 
-func splicePattern2(city string, remindPattern *remind.RemindPattern, value int) (SplicePatternModel, error) {
+func splicePattern2(cityCode string, remindPattern *remind.RemindPattern, value int) (SplicePatternModel, error) {
 	// 2. 突然升温
 	var yesterdayWeather, todayWeather Weather
 	var err error
 	if config.GlobalConfig.Weather.FakeData {
 		yesterdayWeather, todayWeather = FakeWeather()
 	} else {
-		yesterdayWeather, todayWeather, err = Weather2Map(city)
+		yesterdayWeather, todayWeather, err = Weather2Map(cityCode)
 		if err != nil {
 			return SplicePatternModel{}, err
 		}
 	}
 
-	highYesterday := yesterdayWeather[city]["high"].(int)
-	highToday := todayWeather[city]["high"].(int)
-	highTodayStr := strconv.Itoa(todayWeather[city]["high"].(int))
+	highYesterday := yesterdayWeather[cityCode]["high"].(int)
+	highToday := todayWeather[cityCode]["high"].(int)
+	highTodayStr := strconv.Itoa(todayWeather[cityCode]["high"].(int))
 	valueStr := strconv.Itoa(highToday - highYesterday)
 
 	var pattern = new(SplicePatternModel)
@@ -168,21 +168,21 @@ func splicePattern2(city string, remindPattern *remind.RemindPattern, value int)
 	return *pattern, nil
 }
 
-func splicePattern3(city string, remindPattern *remind.RemindPattern, value int) (SplicePatternModel, error) {
+func splicePattern3(cityCode string, remindPattern *remind.RemindPattern, value int) (SplicePatternModel, error) {
 	// 3. 突然降温
 	var yesterdayWeather, todayWeather Weather
 	var err error
 	if config.GlobalConfig.Weather.FakeData {
 		yesterdayWeather, todayWeather = FakeWeather()
 	} else {
-		yesterdayWeather, todayWeather, err = Weather2Map(city)
+		yesterdayWeather, todayWeather, err = Weather2Map(cityCode)
 		if err != nil {
 			return SplicePatternModel{}, err
 		}
 	}
-	highYesterday := yesterdayWeather[city]["high"].(int)
-	highToday := todayWeather[city]["high"].(int)
-	highTodayStr := strconv.Itoa(todayWeather[city]["high"].(int))
+	highYesterday := yesterdayWeather[cityCode]["high"].(int)
+	highToday := todayWeather[cityCode]["high"].(int)
+	highTodayStr := strconv.Itoa(todayWeather[cityCode]["high"].(int))
 	valueStr := strconv.Itoa(highYesterday - highToday)
 
 	var pattern = new(SplicePatternModel)
@@ -195,7 +195,7 @@ func splicePattern3(city string, remindPattern *remind.RemindPattern, value int)
 	return *pattern, nil
 }
 
-func splicePattern8(city string, remindPattern *remind.RemindPattern) (SplicePatternModel, error){
+func splicePattern8(cityCode string, remindPattern *remind.RemindPattern) (SplicePatternModel, error){
 	// 8. 雨过天晴
 	// 枚举"天气现象"表，整理突然降雨的触发条件 ![1,2,3] -> [1,2,3]，考虑remind_pattern里新增一个extension字段（json格式），这个字段不同业务不一样，需要的东西也不一样。
 	// 降雨对应的id todo 以后再弄个天气代码映射表？或者在某个地方弄个静态变量存
@@ -206,15 +206,15 @@ func splicePattern8(city string, remindPattern *remind.RemindPattern) (SplicePat
 	if config.GlobalConfig.Weather.FakeData {
 		yesterdayWeather, todayWeather = FakeWeather()
 	} else {
-		yesterdayWeather, todayWeather, err = Weather2Map(city)
+		yesterdayWeather, todayWeather, err = Weather2Map(cityCode)
 		if err != nil {
 			return SplicePatternModel{}, err
 		}
 	}
 
-	codeText := todayWeather[city]["code_text"].(string)
-	codeYesterday := yesterdayWeather[city]["code_id"].(int)
-	codeToday := todayWeather[city]["code_id"].(int)
+	codeText := todayWeather[cityCode]["code_text"].(string)
+	codeYesterday := yesterdayWeather[cityCode]["code_id"].(int)
+	codeToday := todayWeather[cityCode]["code_id"].(int)
 	isYesRain, _ := utils.IsContain(codeYesterday, RainPatternIds)
 	isTodayRain, _ := utils.IsContain(codeToday, RainPatternIds)
 
@@ -243,7 +243,7 @@ func processBeforeNotify(userId int) (bool, error) {
 	userInfoFlexibleModel := &user.UserInfoFlexible{}
 	userInfoFlexibleModel, has, err := userInfoFlexibleModel.QueryByUserId(userId)
 	if err != nil {
-		err = errnum.New(errnum.DbError, nil)
+		err = errnum.New(errnum.DbError, err)
 		log.Println("get user_info_flexible model error: ", err.Error())
 		return false, err
 	} else if !has {
@@ -289,13 +289,13 @@ func processBeforeNotify(userId int) (bool, error) {
 
 func SpliceOrders(oneOrderModel orderModel.Order) ([]SplicePatternModel, error){
 	orderId := oneOrderModel.OrderId
-	city := oneOrderModel.RemindCity
+	cityCode := oneOrderModel.RemindCity
 
 	// 根据order_id找到order_detail
 	orderDetail := orderModel.OrderDetail{}
 	orderDetailList, err := orderDetail.QueryListByOrderId(orderId)
 	if err != nil {
-		err = errnum.New(errnum.DbError, nil)
+		err = errnum.New(errnum.DbError, err)
 		return nil, err
 	}
 
@@ -309,7 +309,7 @@ func SpliceOrders(oneOrderModel orderModel.Order) ([]SplicePatternModel, error){
 
 		switch oneOrderDetailModel.RemindPatternId {
 		case 1: // 突然降雨
-			pattern1, err := splicePattern1(city, remindPattern)
+			pattern1, err := splicePattern1(cityCode, remindPattern)
 			if err != nil {
 				log.Println("splicePattern1 err", err)
 				continue
@@ -318,7 +318,7 @@ func SpliceOrders(oneOrderModel orderModel.Order) ([]SplicePatternModel, error){
 				patterns = append(patterns, pattern1)
 			}
 		case 2: // 突然升温
-			pattern2, err := splicePattern2(city, remindPattern, value)
+			pattern2, err := splicePattern2(cityCode, remindPattern, value)
 			if err != nil {
 				log.Println("splicePattern2 err", err)
 			}
@@ -326,7 +326,7 @@ func SpliceOrders(oneOrderModel orderModel.Order) ([]SplicePatternModel, error){
 				patterns = append(patterns, pattern2)
 			}
 		case 3: // 突然降温
-			pattern3, err := splicePattern3(city, remindPattern, value)
+			pattern3, err := splicePattern3(cityCode, remindPattern, value)
 			if err != nil {
 				log.Println("splicePattern3 err", err)
 			}
@@ -342,7 +342,7 @@ func SpliceOrders(oneOrderModel orderModel.Order) ([]SplicePatternModel, error){
 		case 7: // 低温预警
 			//println(2)
 		case 8: // 雨过天晴
-			pattern8, err := splicePattern8(city, remindPattern)
+			pattern8, err := splicePattern8(cityCode, remindPattern)
 			if err != nil {
 				log.Println("splicePattern8 err", err)
 			}
@@ -397,7 +397,7 @@ func ProcessOrdersOfTime(time string) {
 			userInfoFlexibleModel := &user.UserInfoFlexible{}
 			userInfoFlexibleModel, has, err := userInfoFlexibleModel.QueryByUserId(oneOrderModel.Creator)
 			if err != nil {
-				err = errnum.New(errnum.DbError, nil)
+				err = errnum.New(errnum.DbError, err)
 				log.Println("get user_info_flexible model error: ", err.Error())
 				continue
 			} else if !has {
@@ -426,7 +426,7 @@ func ProcessOrdersOfTime(time string) {
 			}
 			needToRemindOrder := common.NeedToRemindOrder{
 				//SubscriberId: oneOrderModel.UserId,
-				City:           oneOrderModel.RemindCity,
+				CityCode:       oneOrderModel.RemindCity,
 				SubscriberName: oneOrderModel.SubscriberName,
 				TelephoneNum:   oneOrderModel.TelephoneNum,
 				Creator:        oneOrderModel.Creator,
@@ -491,7 +491,7 @@ step4 事务：order表、order_detail表、user_info_flexible表同时更新
  * @Param 
  * @return 
  **/
-func AddUserOrderTel(userId int, preTele string, telephone string, city string, remindTime string,
+func AddUserOrderTel(userId int, preTele string, telephone string, cityCode string, remindTime string,
 	orderDetail []orderModel.OrderDetailItem) (map[string]interface{}, error){
 	// todo 判断今天是否还有新增/编辑的次数，最后新建成功后要再将次数减一
 	// step1 params校验：手机号、城市校验、提醒时间校验，提醒权限校验
@@ -499,7 +499,7 @@ func AddUserOrderTel(userId int, preTele string, telephone string, city string, 
 	userInfoFlexibleModel := &user.UserInfoFlexible{}
 	userInfoFlexibleModel, has, err := userInfoFlexibleModel.QueryByUserId(userId)
 	if err != nil {
-		err = errnum.New(errnum.DbError, nil)
+		err = errnum.New(errnum.DbError, err)
 		println("get user_info_flexible model error: ", err.Error())
 		return nil , err
 	} else if !has {
@@ -514,7 +514,7 @@ func AddUserOrderTel(userId int, preTele string, telephone string, city string, 
 	// step3 将用户配置的order表中（后面的其他步骤如果操作失败，手动删除刚添加的数据）
 	currentTime := time.Now()
 	orderModelToAdd := orderModel.Order{}
-	orderModelToAdd.RemindCity = city
+	orderModelToAdd.RemindCity = cityCode
 	orderModelToAdd.RemindTime = remindTime
 	orderModelToAdd.TelephoneNum = preTele + telephone
 	orderModelToAdd.Creator = userId
@@ -522,7 +522,7 @@ func AddUserOrderTel(userId int, preTele string, telephone string, city string, 
 	orderModelToAdd.UpdateTime = currentTime
 	err = orderModelToAdd.Create()
 	if err != nil {
-		err = errnum.New(errnum.DbError, nil)
+		err = errnum.New(errnum.DbError, err)
 		println("err", err.Error())
 		return nil, err
 	}
@@ -594,7 +594,7 @@ func GetUserOrderTel(userId int) (map[string]interface{}, error){
 		// PreTele, CityName未来做，其中CityName做map
 		resOrderAndDetail.OrderId = oneOrderModel.OrderId
 		resOrderAndDetail.Telephone = oneOrderModel.TelephoneNum  // todo 现在数据库中存的还是+86
-		resOrderAndDetail.City = oneOrderModel.RemindCity
+		resOrderAndDetail.CityCode = oneOrderModel.RemindCity  // city code
 		resOrderAndDetail.RemindTime = oneOrderModel.RemindTime
 
 		// 先查数据库
@@ -676,7 +676,7 @@ func UpdateUserOrderTel(resOrderAndDetail orderModel.ResOrderAndDetail, userId i
 	}
 	currentTime := time.Now()
 	// 4.1 order表修改
-	theOrderModel.RemindCity = resOrderAndDetail.City
+	theOrderModel.RemindCity = resOrderAndDetail.CityCode
 	theOrderModel.RemindTime = resOrderAndDetail.RemindTime
 	theOrderModel.TelephoneNum = resOrderAndDetail.PreTele + resOrderAndDetail.Telephone
 	theOrderModel.UpdateTime = currentTime
@@ -688,7 +688,7 @@ func UpdateUserOrderTel(resOrderAndDetail orderModel.ResOrderAndDetail, userId i
 	// 4.2 旧order_detail删除
 	_, err = session.Where("order_id=?", orderId).Delete(orderModel.OrderDetail{})
 	if err != nil {
-		err = errnum.New(errnum.DbError, nil)
+		err = errnum.New(errnum.DbError, err)
 		log.Println("err: " + err.Error())
 		return nil, err
 	}
@@ -703,16 +703,9 @@ func UpdateUserOrderTel(resOrderAndDetail orderModel.ResOrderAndDetail, userId i
 			UpdateTime:      currentTime,
 		}
 		if _, err = session.InsertOne(orderDetailModelToAdd); err != nil {
-			err = errnum.New(errnum.DbError, nil)
+			err = errnum.New(errnum.DbError, err)
 			return nil, err
 		}
-	}
-
-	// 4.4 更新userInfoFlexibleModel
-	userInfoFlexibleModel.TelOrderRemaining -= 1
-	if _, err = session.AllCols().Where("user_id=?", userId).Update(*userInfoFlexibleModel); err != nil {
-		err = errnum.New(errnum.DbError, err)
-		return nil, err
 	}
 
 	if err = session.Commit(); err != nil {
@@ -731,11 +724,13 @@ func UpdateUserOrderTel(resOrderAndDetail orderModel.ResOrderAndDetail, userId i
  * @Description 用户删除某订单（真删）
 	step1: 根据order_id查创建者，若不属于该用户，报错
 	step2: 查询该order_id关联的order_detail表
-	step3: 事务：order表和order_detail一起删除
+	step3: 事务：order表和order_detail一起删除，同时更新用户的可配置订单数
  * @Date 18:00 2020-11-16
  * @Param
  * @return
  **/
+// todo delete的时候加上用户的次数可配置次数
+// todo 后端做防连点？ （前端先做放连点）
 func DeleteUserOrderTel(orderId int, userId int) (map[string]interface{}, error) {
 	orderModelInstance := orderModel.Order{}
 	theOrderModel, has, err := orderModelInstance.QueryOneByOrderId(orderId)
@@ -773,6 +768,22 @@ func DeleteUserOrderTel(orderId int, userId int) (map[string]interface{}, error)
 	if err != nil {
 		err = errnum.New(errnum.DbError, nil)
 		log.Println("err: " + err.Error())
+		return nil, err
+	}
+	// 用户可配置订单加一（todo这里需要做防连点！）
+	userInfoFlexibleModel := &user.UserInfoFlexible{}
+	userInfoFlexibleModel, has, err = userInfoFlexibleModel.QueryByUserId(userId)
+	if err != nil {
+		err = errnum.New(errnum.DbError, nil)
+		println("get user_info_flexible model error: ", err.Error())
+		return nil , err
+	} else if !has {
+		log.Println("user_info_flexible model not exist")
+		return nil, errors.New("user_info_flexible model not exist")
+	}
+	userInfoFlexibleModel.TelOrderRemaining += 1
+	if _, err = session.AllCols().Where("user_id=?", userId).Update(*userInfoFlexibleModel); err != nil {
+		err = errnum.New(errnum.DbError, err)
 		return nil, err
 	}
 	err = session.Commit()

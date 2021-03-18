@@ -24,7 +24,7 @@ func AddUserOrderTel(context *gin.Context) {
 	type PostParams struct {
 		PreTele     string                       `json:"pre_tele"`
 		Telephone   string                       `json:"telephone"`
-		City        string                       `json:"city"`
+		CityCode    string                       `json:"city_code"`
 		RemindTime  string                       `json:"remind_time"`
 		OrderDetail []orderModel.OrderDetailItem `json:"order_detail"`
 	}
@@ -39,7 +39,7 @@ func AddUserOrderTel(context *gin.Context) {
 	userId := context.GetHeader("X-User-Id")
 	userIdInt, _ := strconv.Atoi(userId)
 	resultData, err := order.AddUserOrderTel(
-		userIdInt, postParams.PreTele, postParams.Telephone, postParams.City,
+		userIdInt, postParams.PreTele, postParams.Telephone, postParams.CityCode,
 		postParams.RemindTime, postParams.OrderDetail)
 	if err != nil {
 		handler.SendResponse(context, err, nil)
@@ -113,7 +113,7 @@ func UpdateUserOrderTel(context *gin.Context) {
 	//	OrderId
 	//	PreTele     string                       `json:"pre_tele"`
 	//	Telephone   string                       `json:"telephone"`
-	//	City        string                       `json:"city"`
+	//	CityCode    string                       `json:"city_code"`
 	//	RemindTime  string                       `json:"remind_time"`
 	//	OrderDetail []orderModel.OrderDetailItem `json:"order_detail"`
 	//}
