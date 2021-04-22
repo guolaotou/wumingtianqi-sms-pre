@@ -74,6 +74,7 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 	}
 	localDateInt := utils.GetSpecificDate8Int(0)
 	userVipLevel := userInfoFlexibleModel.VipLevel
+
 	if userVipLevel >= utils.VIP1 && userVipLevel != invitationVipLevel {  // 用户当前已经是VIP，但非该邀请码对应VIP等级，则覆盖vip
 		// 之前是报错；现在是做成与非VIP逻辑一样；todo 未来支持多vip模式，采用顺延旧vip的机制
 		//err = errnum.New(errnum.UserAlreadyVip, nil)
@@ -93,7 +94,7 @@ func GetInvitationReward(userId int, invitationCode string) (map[string]interfac
 	userInfoFlexibleModel.ExpirationTime = utils.AddSpecificDays8Int(userInfoFlexibleModel.ExpirationTime, duration)
 	userInfoFlexibleModel.InvitationCode = invitationCode
 	vipRightsMap := &vip.VipRightsMap{}
-	vipRightsMap, has, err = vipRightsMap.QueryByVipLevel(userVipLevel)
+	vipRightsMap, has, err = vipRightsMap.QueryByVipLevel(invitationVipLevel)
 	if err != nil {
 		err = errnum.New(errnum.DbError, err)
 		log.Println("QueryByVipLevel err:", err.Error())

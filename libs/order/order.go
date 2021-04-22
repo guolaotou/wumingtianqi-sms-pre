@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 	"wumingtianqi/config"
+	"wumingtianqi/model/city"
 	"wumingtianqi/model/common"
 	orderModel "wumingtianqi/model/order"
 	"wumingtianqi/model/remind"
@@ -587,6 +588,18 @@ func GetUserOrderTel(userId int) (map[string]interface{}, error){
 		return nil, err
 	}
 
+	// 制作city code和城市名的映射
+	cityList, err := city.GetAllCity()
+	if err != nil {
+		err = errnum.New(errnum.DbError, err)
+		log.Println("GetAllCity err:", err.Error())
+		return nil, err
+	}
+	cityCodeNameMap := make(map[string]string, 0)
+	for i := 0; i < len(cityList); i++ {
+		cityCodeNameMap[cityList[i].Code] = cityList[i].District
+	}
+
 	resOrderAndDetailList := make([]orderModel.ResOrderAndDetail, 0)
 	for _, oneOrderModel := range orderModelList {
 		// 这里和libs/order/order.go ProcessOrdersOfTime方法差不多；
@@ -596,6 +609,7 @@ func GetUserOrderTel(userId int) (map[string]interface{}, error){
 		resOrderAndDetail.Telephone = oneOrderModel.TelephoneNum  // todo 现在数据库中存的还是+86
 		resOrderAndDetail.CityCode = oneOrderModel.RemindCity  // city code
 		resOrderAndDetail.RemindTime = oneOrderModel.RemindTime
+		resOrderAndDetail.CityName = cityCodeNameMap[oneOrderModel.RemindCity]
 
 		// 先查数据库
 		orderDetailInstance := orderModel.OrderDetail{}
